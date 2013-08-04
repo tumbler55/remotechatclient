@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="16">
+	<mx:Image id="picInfo" source="{_pic}" height="16" width="16"/>
+	<mx:Label id="nameLabel" text="{_name}"/>
+	<mx:Script>
+		<![CDATA[
+			public var _name:String;
+			public var _pic:String="person.png";
+		]]>
+	</mx:Script>
+</mx:HBox>

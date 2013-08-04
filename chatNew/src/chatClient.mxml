@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" backgroundImage="background.jpg" creationComplete="initApp()" layout="absolute" minWidth="955" minHeight="600" xmlns:local="*">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import com.personInfo;
+			import com.yourpalmark.chat.ChatManager;
+			import com.yourpalmark.chat.data.ChatRoom;
+			
+			import mx.containers.FormItem;
+			import mx.controls.Alert;
+			
+			import org.igniterealtime.xiff.collections.events.CollectionEvent;
+			import org.igniterealtime.xiff.core.Browser;
+			import org.igniterealtime.xiff.core.EscapedJID;
+			import org.igniterealtime.xiff.core.UnescapedJID;
+			import org.igniterealtime.xiff.data.IQ;
+			import org.igniterealtime.xiff.data.Message;
+			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
+			import org.igniterealtime.xiff.events.LoginEvent;
+			import org.igniterealtime.xiff.events.MessageEvent;
+			import org.igniterealtime.xiff.events.XIFFErrorEvent;
+			import org.igniterealtime.xiff.im.Roster;
+			import org.igniterealtime.xiff.util.DateTimeParser;
+			public var chatManager;
+			public var messageDict:Dictionary;
+			public var _room:ChatRoom;
+			private var browser:Browser;
+			private var targetRoom:String="测试";
+			
+			private function initApp()
+			{
+				setupChatManager();				
+			}
+			private function setupChatManager():void
+			{
+				chatManager = new ChatManager();
+				chatManager.addEventListener( LoginEvent.LOGIN, onLogin );
+				chatManager.addEventListener( XIFFErrorEvent.XIFF_ERROR, onXIFFError );
+				chatManager.addEventListener( MessageEvent.MESSAGE, onMessage );
+				/* chatManager.addEventListener( OutgoingDataEvent.OUTGOING_DATA, onOutgoingData );
+				chatManager.addEventListener( IncomingDataEvent.INCOMING_DATA, onIncomingData );
+				chatManager.addEventListener( RegistrationSuccessEvent.REGISTRATION_SUCCESS, onRegistrationSuccess );
+				chatManager.addEventListener( PresenceEvent.PRESENCE, onPresence );
+				
+				chatManager.addEventListener( InviteEvent.INVITED, onInvited );
+				chatManager.addEventListener( RosterEvent.ROSTER_LOADED, onRosterLoaded );
+				chatManager.addEventListener( RosterEvent.SUBSCRIPTION_DENIAL, onSubscriptionDenial );
+				chatManager.addEventListener( RosterEvent.SUBSCRIPTION_REQUEST, onSubscriptionRequest );
+				chatManager.addEventListener( RosterEvent.SUBSCRIPTION_REVOCATION, onSubscriptionRevocation );
+				chatManager.addEventListener( RosterEvent.USER_AVAILABLE, onUserAvailable );
+				chatManager.addEventListener( RosterEvent.USER_UNAVAILABLE, onUserUnavailable );*/
+				chatManager.chatUserRoster.addEventListener( CollectionEvent.COLLECTION_CHANGE, onChatUserRosterChange ); 				
+			}
+			private function initRoom():void
+			{
+				_room = new ChatRoom();
+				//addRoomListeners();				
+				var server:EscapedJID= new EscapedJID( chatManager.conferenceServer );
+				browser = new Browser( chatManager.connection );
+				browser.getServiceItems( server, onGetServiceItems );
+			}
+			private function onGetServiceItems( iq:IQ):void
+			{
+				var extensions:Array = iq.getAllExtensions();
+				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;
+				
+				if( disco )
+				{
+					if(targetRoom==disco.items[0].name)
+					{
+						_room.chatManager=chatManager;
+						_room.join(new UnescapedJID(disco.items[0].jid) );						
+						if(_room )chatroom.initRoom();						
+					}					
+				}
+			}
+			private function onLogin( event:LoginEvent):void
+			{
+				/* joinMUCButton.enabled = true;
+				createMUCButton.enabled = true;
+				groupComboBox.enabled = true;
+				updateGroupBuddyComboBox.enabled = true;
+				removeBuddyComboBox.enabled = true;
+				presenceStateComboBox.enabled = true;
+				presenceStateComboBox.dataProvider = presenceDataProvider;
+				changeIconButton.enabled = true;
+				disconnectButton.enabled = true;
+				connectButton.enabled = false;
+				registerButton.enabled = false; */
+				trace(chatroom._fromjid=chatManager.currentUser.jid);				
+				
+				
+				login.visible=false;
+				chatroom.visible=true;
+				var cam:Camera = Camera.getCamera();
+				var vid:Video = new Video();				
+				vid.attachCamera(cam);
+				vid.height=chatroom.myVideo.height;
+				vid.width=chatroom.myVideo.width;
+				
+				
+				var cam1:Camera = Camera.getCamera();
+				var vid1:Video = new Video();
+				vid1.attachCamera(cam1);
+				vid1.height=chatroom.familyVideo1.height;
+				vid1.width=chatroom.familyVideo1.width;
+				
+				var cam2:Camera = Camera.getCamera();
+				var vid2:Video = new Video();
+				vid2.attachCamera(cam2);				
+				 chatroom.myVideo.addChild(vid);
+				chatroom.familyVideo1.addChild(vid1); 
+			}
+			private function onChatUserRosterChange(event:CollectionEvent):void
+			{
+				//chatroom.friendList.removeAllChildren();
+				/* for each(var perosn:Object in chatManager.roster.source)
+				{
+					var item:FormItem=new FormItem();
+					chatroom._tojid=chatManager.roster.source[0].jid
+					item.label=perosn.nickname;
+					item.width=chatroom.friendList.width;
+					chatroom.friendList.addChild(item);
+				} */
+				this.initRoom();
+			}			
+			//获取聊天信息
+			private function onMessage( event:MessageEvent ):void
+			{
+				var message:Message = event.data as Message;					
+				if( message.type == Message.TYPE_GROUPCHAT )
+				{					
+					chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
+				}	 	 		
+				callLater(updateScrollPosition);
+			}
+			private function updateScrollPosition():void
+			{
+				chatroom.messageTextArea.verticalScrollPosition = chatroom.messageTextArea.maxVerticalScrollPosition;
+			}
+			
+			private function onXIFFError( event:XIFFErrorEvent):void
+			{
+				trace(event.toString());
+				/* var error:Object = { errorCode: event.errorCode, errorCondition: event.errorCondition, errorMessage: event.errorMessage, errorType: event.errorType };
+				errorDataProvider.addItem( error );
+				logDataProvider.addItem( "XIFFErrorEvent " + "onXIFFError: " + "type:" + event.errorType + "  message:" + event.errorMessage );
+				callLater( updateLogScrollPosition ); */
+			}			
+		]]>
+	</mx:Script>
+	<local:chatRoom id="chatroom" verticalCenter="0" horizontalCenter="0" visible="false"/>
+	<local:LoginDialog id="login" verticalCenter="0" horizontalCenter="0" visible="true"/>	
+</mx:Application>

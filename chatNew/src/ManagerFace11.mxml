@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="100%" creationComplete="initApp()" fontSize="13" title="视频会见系统" height="100%">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.ListEvent;
+			public var currentNode:XML;
+			private var treeData:XMLList;
+			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"",email:"",phone:"",type:0},{id:2,name:"",email:"",phone:"",type:1},{id:3,name:"",email:"",phone:""
+			},{id:4,name:"",email:"",phone:"",type:0},{id:5,name:"",email:"",phone:"",type:0},{id:6,name:"",email:"",phone:"",type:1},{id:7,name:"",email:"",phone:"",type:2},{id:8,name:"",email:"",phone:""
+				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
+			private var listData:ArrayCollection=new ArrayCollection();
+			
+			
+			private function initApp():void
+			{
+				treeData=new XMLList();
+				var newNode:XML=<node/>;
+				newNode[0].appendChild(<node label="系统成员信息"/>);
+				newNode[0].appendChild(<node label="犯人信息"/>);
+				newNode[0].appendChild(<node label="家属信息"/>);
+				newNode[0].appendChild(<node label="测试信息"/>);
+				treeData=new XMLList(newNode)
+				system.dataProvider=treeData;
+				for each(var ss:Object in systemMan)
+				{
+					var myNode:XML=<node/>;
+					myNode.@laebl=ss.name;
+					newNode[0][0].appendChild(myNode);
+				}
+			}			
+			
+			protected function loadData(event:ListEvent):void
+			{
+				currentNode=Tree(event.currentTarget).selectedItem as XML;
+
+				switch(currentNode.@label+"")
+				{
+					case "系统人员":
+					{	
+						currentTitle.text=currentNode.@label+"列表";
+						listData.removeAll();
+						for each(var ss:Object in systemMan)
+						{
+							if(ss.type==0)
+							{
+								listData.addItem(ss);
+							}
+						}
+					}
+						break;
+					case "犯人":
+					{
+						currentTitle.text=currentNode.@label+"列表";
+						listData.removeAll();
+						for each(var ss:Object in systemMan)
+						{
+							if(ss.type==1)
+							{
+								listData.addItem(ss);
+							}
+						}
+					}
+						break;
+					case "家属":
+					{
+						currentTitle.text=currentNode.@label+"列表";
+						listData.removeAll();
+						for each(var ss:Object in systemMan)
+						{
+							if(ss.type==2)
+							{
+								listData.addItem(ss);
+							}
+						}
+					}
+						break;
+				}
+				listData.refresh();
+				
+			}
+			
+		]]>
+	</mx:Script>
+	<mx:HBox height="100%" width="100%">
+		<mx:VBox height="100%" width="15%" fontSize="13" borderStyle="inset">
+			<!--<mx:List height="100%" width="100%" click="loadData(event)">
+			<mx:dataProvider>
+			<mx:Array>
+			<mx:Object label="系统人员"/>
+			<mx:Object label="犯人信息"/>
+			<mx:Object label="家属信息"/>
+			<mx:Object label="会见记录"/>
+			<mx:Object label="会见监控"/>
+			<mx:Object label="聊天记录回看"/>
+			<mx:Object label="视频会见统计"/>
+			</mx:Array>
+			</mx:dataProvider>
+			</mx:List>-->
+			<mx:Accordion width="100%" height="50%" fontSize="13">
+				<mx:Canvas label="系统管理" width="100%" height="100%">
+					<mx:Tree width="100%" height="100%" id="system" dataProvider="{}" change="loadData(event)" labelField="@label" showRoot="false"/>
+				</mx:Canvas>
+				<mx:Canvas label="探监申请" width="100%" height="100%">
+				</mx:Canvas>
+				<mx:Canvas label="会见监控" width="100%" height="100%">
+				</mx:Canvas>
+				<mx:Canvas label="记录回看" width="100%" height="100%">
+				</mx:Canvas>
+			</mx:Accordion>
+		</mx:VBox>
+		<mx:VRule height="100%"/>
+		<mx:VBox height="100%" width="85%" borderStyle="inset">		
+			<mx:Label id="currentTitle"/>
+			<mx:DataGrid dataProvider="{listData}" width="721" height="240">
+				<mx:columns>
+					<mx:DataGridColumn dataField="id" headerText="编号"/>
+					<mx:DataGridColumn dataField="name" headerText=" 名称"/>
+					<mx:DataGridColumn dataField="phone" headerText="电话"/>
+					<mx:DataGridColumn dataField="email" headerText="EMAIL"/>					
+				</mx:columns>
+			</mx:DataGrid>
+		</mx:VBox>		
+	</mx:HBox>
+</mx:TitleWindow>

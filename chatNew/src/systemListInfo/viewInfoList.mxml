@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",iCard:"313112313",criminal:"李四",type:0,status:"待审核"},{id:2,name:"王",email:"wang@1.com",iCard:"5235235",criminal:"李二",type:1,status:"通过"},
+				{id:3,name:"孙",email:"sun@1.com",iCard:"4124124",criminal:"李一",type:1,status:"未通过"},{id:4,name:"钱",email:"qian@1.com",iCard:"5235235",criminal:"李五",type:0,status:"结束"}]);
+			private function addData(event:MouseEvent):void
+			{
+				Alert.show("新增");
+			}
+			private function deleteData(event:MouseEvent):void
+			{
+				Alert.show("删除");
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox label="会见记录列表">		
+		<mx:DataGrid dataProvider="{systemMan}" height="100%" width="100%">
+			<mx:columns>
+				<mx:DataGridColumn headerText="选择" width="50">
+					<mx:itemRenderer>
+						<mx:Component>
+							<mx:VBox horizontalAlign="center">
+								<mx:CheckBox>
+									
+								</mx:CheckBox>
+							</mx:VBox>
+						</mx:Component>
+					</mx:itemRenderer>
+				</mx:DataGridColumn>
+				<mx:DataGridColumn dataField="id" headerText="编号"/>
+				<mx:DataGridColumn dataField="name" headerText="家属"/>
+				<mx:DataGridColumn dataField="iCard" headerText="身份证"/>
+				<mx:DataGridColumn dataField="criminal" headerText="犯人"/>
+				<mx:DataGridColumn dataField="email" headerText="EMAIL"/>	
+				<mx:DataGridColumn dataField="status" headerText="状态"/>	
+			</mx:columns>
+		</mx:DataGrid>
+		<mx:HBox>
+			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
+		</mx:HBox>
+	</mx:VBox>	
+</mx:TabNavigator>

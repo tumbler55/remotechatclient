@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Label id="roomName" text="1号房间" color="#FF0000" fontSize="12"/>
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox width="20%" height="100%">
+			<mx:Label text="犯人"/>
+			<mx:VideoDisplay width="100%" height="49%" id="myVideo"/>	
+			<mx:Label text="家属"/>
+			<mx:VideoDisplay width="100%" height="49%" id="familyVideo1"/>
+		</mx:VBox>
+		<mx:VBox height="100%" width="80%">
+			<mx:TabNavigator width="100%" height="85%">
+				<mx:Canvas label="聊天记录">
+					<mx:TextArea id="messageTextArea" width="100%" height="100%" visible="false" borderStyle="inset" editable="false" />
+				</mx:Canvas>
+			</mx:TabNavigator>		
+			<mx:HBox width="100%" height="5%">
+				<mx:Label text="会话结束倒计时:"/>
+				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
+				<mx:Button label="掐断会话" click="" id="viewOver"/>
+			</mx:HBox>
+			<mx:HBox width="100%" height="10%">
+				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp=""/>
+				<mx:Button id="sendButton" label="发送" click=""/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>
+</mx:VBox>

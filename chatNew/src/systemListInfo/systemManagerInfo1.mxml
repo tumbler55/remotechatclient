@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="400" height="300">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",phone:"313112313",type:0},{id:2,name:"王",email:"wang@1.com",phone:"5235235",type:1},
+				{id:3,name:"孙",email:"sun@1.com",phone:"4124124",type:1},{id:4,name:"钱",email:"qian@1.com",phone:"5235235",type:0}]);
+			private function addData(event:MouseEvent):void
+			{
+				Alert.show("新增");
+			}
+			private function deleteData(event:MouseEvent):void
+			{
+				Alert.show("删除");
+			}
+		]]>
+	</mx:Script>
+	<mx:Label id="myTitle"/>
+		<mx:HBox>
+			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
+		</mx:HBox>
+		<mx:DataGrid dataProvider="{systemMan}" width="100%">
+			<mx:columns>
+				<mx:DataGridColumn dataField="name" headerText="姓名"/>
+				<mx:DataGridColumn dataField="phone" headerText="电话"/>
+				<mx:DataGridColumn dataField="email" headerText="EMAIL"/>					
+			</mx:columns>
+		</mx:DataGrid>
+</mx:VBox>

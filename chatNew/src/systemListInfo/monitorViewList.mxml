@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="initApp()" width="100%" height="100%" borderStyle="inset" xmlns:systemListInfo="systemListInfo.*">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.Application;
+			
+			import org.igniterealtime.xiff.core.Browser;
+			import org.igniterealtime.xiff.core.EscapedJID;
+			import org.igniterealtime.xiff.data.IQ;
+			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
+			private function initApp():void
+			{//addRoomListeners();				
+				var server:EscapedJID= new EscapedJID(Application.application.chatManager.conferenceServer );
+				Application.application.browser = new Browser(Application.application.chatManager.connection );
+				Application.application.browser.getServiceItems( server, onGetServiceItems );
+			}
+			private function onGetServiceItems(iq:IQ):void
+			{
+				var extensions:Array = iq.getAllExtensions();
+				var disco:ItemDiscoExtension= extensions.length > 0 ? extensions[ 0 ] : null;
+				
+				if( disco )
+				{
+					roomlist.dataProvider=disco.items;				
+				}
+			}
+			private function addData(event:MouseEvent):void
+			{
+				Alert.show("新增");
+			}
+			private function deleteData(event:MouseEvent):void
+			{
+				Alert.show("删除");
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox id="roomListFace" label="会见房间信息" height="100%" width="100%">
+		<!--<mx:HBox>
+			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
+		</mx:HBox>-->
+		<mx:DataGrid id="roomlist" height="100%" width="100%">
+			<mx:columns>
+				<mx:DataGridColumn dataField="jid" width="200" headerText="编号"/>
+				<mx:DataGridColumn dataField="name" headerText="房间名称"/>
+				<mx:DataGridColumn dataField="status" headerText="状态"/>	
+			</mx:columns>
+		</mx:DataGrid>
+	</mx:VBox>	
+	<systemListInfo:moitorPanel visible="false" id="moitorface" horizontalCenter="0" verticalCenter="0"/>
+</mx:TabNavigator>

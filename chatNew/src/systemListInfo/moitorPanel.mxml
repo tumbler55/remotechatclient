@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" label="会话监控" width="100%" height="100%" xmlns:local="*" xmlns:systemListInfo="systemListInfo.*">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:HBox height="50%" width="100%">
+		<systemListInfo:roomMoitor id="room1" height="100%" width="50%"/>
+		<systemListInfo:roomMoitor id="room2" height="100%" width="50%"/>
+	</mx:HBox>
+	<mx:HBox height="50%" width="100%">
+		<systemListInfo:roomMoitor id="room3" height="100%" width="50%"/>
+		<systemListInfo:roomMoitor id="room4" height="100%" width="50%"/>
+	</mx:HBox>
+</mx:VBox>

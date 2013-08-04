@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" title="视频会见" layout="absolute" width="100%" height="100%" creationComplete="initApp()">
+	<mx:Style source="AeonGraphical.css"/>
+	<mx:Script>
+		<![CDATA[
+			import com.personInfo;
+			import com.yourpalmark.chat.data.ChatRoom;
+			
+			import mx.controls.Alert;
+			import mx.core.Application;
+			
+			import org.igniterealtime.xiff.core.EscapedJID;
+			import org.igniterealtime.xiff.core.UnescapedJID;
+			import org.igniterealtime.xiff.data.Message;
+			import org.igniterealtime.xiff.events.MessageEvent;
+			import org.igniterealtime.xiff.events.RoomEvent;
+			import org.igniterealtime.xiff.util.DateTimeParser;
+			
+			private var messageDict:Dictionary;
+			public var _tojid:UnescapedJID;
+			public var _fromjid:UnescapedJID;
+			private var _room:ChatRoom;
+			public var timeRefresh:Timer=new Timer(1000);
+			private var allTime:int=3600;
+			[Bindable]public var messageInfo:Sound=new Sound(new URLRequest("msg.mp3"));
+			private function initApp():void
+			{
+				this.timeLeft();				
+			}
+			private function timeLeft():void
+			{
+				timeRefresh.start();
+				timeRefresh.addEventListener(TimerEvent.TIMER,freshLeftTime,false,0,true);				
+			}
+			private function freshLeftTime(event:TimerEvent):void
+			{
+				allTime-=1;
+				var h:int=allTime/3600;
+				var m:int=(allTime%3600	)/60;
+				var s=(allTime%3600	)%60;
+				timechange.text=h+":"+m+":"+s;		
+				if(allTime==0)
+				{
+					Application.application.chatManager.disconnect();
+					Application.application.removeAllChildren();
+					myVideo.stop();
+					Alert.show("会见时间到！！","提示！");
+				}
+			}	
+			public function initRoom():void
+			{
+				Application.application._room.addEventListener( RoomEvent.USER_DEPARTURE, onUserDeparture );
+				Application.application._room.addEventListener( RoomEvent.USER_JOIN, onUserJoin );
+			}
+			private function onUserDeparture( event:RoomEvent):void
+			{
+				messageTextArea.htmlText+=( "<font color='#ababab'>" + event.nickname + " 退出聊天室.</font>" );
+				friendList.removeAllChildren();
+				for each(var person:Object in Application.application._room.users.source)
+				{
+					var myDetail:personInfo=new personInfo();
+					myDetail._name=person.displayName;
+					if(Application.application.chatManager.currentUser.displayName==person.displayName)
+					{
+						friendList.addChildAt(myDetail,0);
+					}	
+					else
+					{
+						myDetail._pic="visitor.png"
+						friendList.addChild(myDetail);
+					}					
+				}				
+			}
+			
+			private function onUserJoin( event:RoomEvent ):void
+			{
+				friendList.removeAllChildren();
+				for each(var person:Object in Application.application._room.users.source)
+				{
+					var myDetail:personInfo=new personInfo();
+					myDetail._name=person.displayName;
+					if(Application.application.chatManager.currentUser.displayName==person.displayName)
+					{
+						friendList.addChildAt(myDetail,0);
+					}	
+					else
+					{
+						myDetail._pic="visitor.png"
+						friendList.addChild(myDetail);
+					}					
+				}				
+				messageTextArea.htmlText+=( "<font color='#ababab'>" + event.nickname + " 进入聊天室.</font>" );
+			}
+			/* public function get toJID():UnescapedJID
+			{
+			return _tojid;
+			}
+			public function set toJID( value:UnescapedJID ):void
+			{
+			_tojid = value;
+			callLater( setToJID, [ value ] );
+			}
+			
+			public function set fromJID( value:UnescapedJID ):void
+			{
+			_fromjid = Application.application.chatManager.currentUser.jid;
+			}
+			private function setToJID( jid:UnescapedJID ):void
+			{
+			//userJIDLabel.text = jid.toString();
+			} */
+			
+			private function onSendClick( event:MouseEvent ):void
+			{
+				sendMessage();				
+			}
+			private function sendMessage():void
+			{
+				if( inputTextArea.text.length > 0 )
+				{
+					/* var message:Message= new Message(_tojid.escaped, null, null, null, Message.TYPE_CHAT, null );
+					message.from= _fromjid.escaped;
+					message.body = inputTextArea.text; */
+					Application.application._room.sendMessage( inputTextArea.text );					
+					//updateMessageDisplay( inputTextArea.text, null,null);
+					
+					callLater( clearTypeArea );
+					callLater( updateScrollPosition );
+					
+					/* var messageEvent:MessageEvent= new MessageEvent();
+					messageEvent.data = message;
+					dispatchEvent( messageEvent ); */
+				}
+			}
+			private function clearTypeArea():void
+			{
+				inputTextArea.text = "";
+			}
+			private function onDisconnectClick( event:MouseEvent ):void
+			{
+				Application.application.chatManager.disconnect();
+				this.visible=false;
+				myVideo.close();
+				//Application.application.login.visible=true;
+			}
+			public function updateMessageDisplay( message:String, jid:String, time:Date ):void
+			{
+				if(messageTextArea.visible==false)
+				{
+					messageTextArea.text="";
+				}
+				else
+				{					
+					if( !time ) time = new Date();		
+					if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
+					{
+						messageInfo.play();
+						messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					}
+					else if(Application.application.chatManager.currentUser.displayName==jid)
+					{
+						messageTextArea.htmlText += "<font color='#0000ff'>[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+					}
+					
+					callLater( updateScrollPosition );
+				}				
+			}
+			private function updateScrollPosition():void
+			{
+				messageTextArea.verticalScrollPosition = messageTextArea.maxVerticalScrollPosition;
+			}
+			private function handleKeyUp(event:KeyboardEvent):void 
+			{
+				if(event.keyCode == Keyboard.ENTER)
+				{
+					sendMessage();
+				}
+			}
+		]]>
+	</mx:Script>
+	<mx:HBox height="100%" width="100%" paddingTop="10" fontSize="12" creationComplete="{messageTextArea.visible=true}">
+		<mx:VBox height="100%" width="20%">
+			<mx:TabNavigator width="100%" height="42%">
+				<mx:Canvas label="我的视频">
+					<mx:VideoDisplay width="100%" height="209" id="myVideo"/>
+				</mx:Canvas>
+				<mx:Canvas label="我的信息"></mx:Canvas>	
+			</mx:TabNavigator>			
+			<mx:Button label="会见结束" click="onDisconnectClick(event)" id="viewOver"/>
+			<mx:TabNavigator width="100%" height="42%">
+				<mx:Canvas label="家属视频">
+					<mx:VideoDisplay width="100%" height="209" id="familyVideo1"/>
+				</mx:Canvas>
+				<mx:Canvas label="家属信息"></mx:Canvas>	
+			</mx:TabNavigator>
+			<mx:VBox id="friendList" height="100%" visible="false" width="100%">
+			</mx:VBox>
+		</mx:VBox>			
+		<mx:VBox height="100%" width="80%">
+			<mx:TabNavigator width="100%" height="75%">
+				<mx:Canvas label="聊天记录">
+					<mx:TextArea id="messageTextArea" width="100%" height="100%" visible="false" borderStyle="inset" editable="false" />
+				</mx:Canvas>
+			</mx:TabNavigator>		
+			<mx:HBox width="100%" height="5%">
+				<mx:Label text="会话结束倒计时:"/>
+				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
+			</mx:HBox>
+			<mx:HBox width="100%" height="20%">
+				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp="handleKeyUp(event)"/>
+				<mx:Button id="sendButton" label="发送" click="onSendClick(event)"/>
+			</mx:HBox>
+		</mx:VBox>
+	</mx:HBox>	
+</mx:TitleWindow>

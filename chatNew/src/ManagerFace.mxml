@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="100%" creationComplete="initApp()" fontSize="13" title="视频会见系统" height="100%" xmlns:systemListInfo="systemListInfo.*">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.ListEvent;
+			import mx.messaging.AbstractConsumer;
+			
+			import systemListInfo.criminalsInfoList;
+			import systemListInfo.familyInfoList;
+			import systemListInfo.monitorViewList;
+			import systemListInfo.systemManagerInfo;
+			import systemListInfo.systemManagerInfo1;
+			import systemListInfo.viewInfoList;
+			public var currentNode:XML;
+			private var treeData:XMLList;
+			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"",phone:"",type:0},{id:2,name:"王",email:"",phone:"",type:1},{id:3,name:"",email:"",phone:""
+			},{id:4,name:"",email:"",phone:"",type:0},{id:5,name:"",email:"",phone:"",type:0},{id:6,name:"",email:"",phone:"",type:1},{id:7,name:"",email:"",phone:"",type:2},{id:8,name:"",email:"",phone:""
+				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
+			private var listData:ArrayCollection=new ArrayCollection();
+			
+			
+			private function initApp():void
+			{
+				
+			}			
+			
+			protected function loadData(event:MouseEvent):void
+			{
+				trace(event.currentTarget.selectedItem.label);
+				dataList.removeAllChildren();
+				switch(event.currentTarget.selectedItem.label)
+				{
+					case "人员管理":
+					{
+						var systemlist:systemManagerInfo=new systemManagerInfo();
+						dataList.addChild(systemlist);
+					}
+						break;
+					case "犯人信息":
+					{
+						var criminal:criminalsInfoList=new criminalsInfoList();
+						dataList.addChild(criminal);
+						criminal.label=event.currentTarget.selectedItem.label+"列表";
+					}
+						break;
+					case "会见记录":
+					{
+						var view:viewInfoList=new viewInfoList();
+						dataList.addChild(view);
+					}
+						break;
+					case "会见监控":
+					{
+						var viewmonitor:monitorViewList=new monitorViewList();
+						dataList.addChild(viewmonitor);
+					}
+						break;
+					case "聊天记录回看":
+					{
+						
+					}
+						break;
+				}			
+			}			
+		]]>
+	</mx:Script>		
+	<mx:HDividedBox width="100%" height="100%">
+		<mx:VBox height="100%" width="15%" fontSize="13" borderStyle="inset">
+			<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
+				<mx:dataProvider>
+					<mx:Array>
+						<mx:Object label="用户管理"/>
+						<mx:Object label="犯人信息"/>
+						<mx:Object label="会见记录"/>
+						<mx:Object label="会见监控"/>
+						<mx:Object label="聊天记录回看"/>
+					</mx:Array>
+				</mx:dataProvider>
+			</mx:List>
+			<!--<mx:Accordion width="100%" height="50%" fontSize="13">
+			<mx:Canvas label="系统管理" width="100%" height="100%">
+			<mx:Tree width="100%" height="100%" id="system" dataProvider="{}" change="loadData(event)" labelField="@label" showRoot="false"/>
+			</mx:Canvas>
+			<mx:Canvas label="探监申请" width="100%" height="100%">
+			</mx:Canvas>
+			<mx:Canvas label="会见监控" width="100%" height="100%">
+			</mx:Canvas>
+			<mx:Canvas label="记录回看" width="100%" height="100%">
+			</mx:Canvas>
+			</mx:Accordion>-->
+		</mx:VBox>
+		<mx:VBox height="100%" width="85%" borderStyle="inset" id="dataList">		
+			<!--<mx:Label id="currentTitle"/>
+			<mx:DataGrid dataProvider="{listData}" width="721" height="240">
+			
+			</mx:DataGrid>-->
+		</mx:VBox>	
+	</mx:HDividedBox>
+</mx:TitleWindow>
