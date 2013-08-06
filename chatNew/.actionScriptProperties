@@ -16,11 +16,13 @@
   </compiler>
   <applications>
     <application path="Aeon.mxml"/>
-    <application path="chatClient.mxml"/>
+    <application path="com/test/viemApplyPage.mxml"/>
     <application path="systemManager.mxml"/>
-    <application path="video.mxml"/>
-    <application path="XIFFGUI.mxml"/>
+    <application path="chatClient.mxml"/>
+    <application path="com/test/video.mxml"/>
+    <application path="com/test/XIFFGUI.mxml"/>
     <application path="viemApplyPage.mxml"/>
+    <application path="XIFFGUI.mxml"/>
   </applications>
   <modules/>
   <buildCSSFiles/>

@@ -26,7 +26,7 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			private var browser:Browser;
-			private var targetRoom:String="测试";
+			private var targetRoom:String="5";
 			
 			private function initApp()
 			{
@@ -88,9 +88,8 @@
 				disconnectButton.enabled = true;
 				connectButton.enabled = false;
 				registerButton.enabled = false; */
-				trace(chatroom._fromjid=chatManager.currentUser.jid);				
-				
-				
+				trace(chatManager.currentUser.jid.bareJID);				
+				chatroom.initApp();				
 				login.visible=false;
 				chatroom.visible=true;
 				var cam:Camera = Camera.getCamera();

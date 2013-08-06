@@ -10,6 +10,7 @@
 			import mx.collections.ArrayCollection;
 			import mx.containers.FormItem;
 			import mx.controls.Alert;
+			import mx.rpc.soap.WebService;
 			
 			import org.igniterealtime.xiff.collections.events.CollectionEvent;
 			import org.igniterealtime.xiff.core.Browser;
@@ -28,7 +29,7 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			public var browser:Browser;
-			private var targetRoom:String="测试";			
+			private var targetRoom:String="测试";	
 			private function initApp()
 			{
 				setupChatManager();				
@@ -38,7 +39,7 @@
 				chatManager = new ChatManager();
 				chatManager.addEventListener( LoginEvent.LOGIN, onLogin );
 				chatManager.addEventListener( XIFFErrorEvent.XIFF_ERROR, onXIFFError );
-				chatManager.addEventListener( MessageEvent.MESSAGE, onMessage );
+				//chatManager.addEventListener( MessageEvent.MESSAGE, onMessage );
 				/* chatManager.addEventListener( OutgoingDataEvent.OUTGOING_DATA, onOutgoingData );
 				chatManager.addEventListener( IncomingDataEvent.INCOMING_DATA, onIncomingData );
 				chatManager.addEventListener( RegistrationSuccessEvent.REGISTRATION_SUCCESS, onRegistrationSuccess );
@@ -68,12 +69,11 @@
 				
 				if( disco )
 				{
-					if(targetRoom==disco.items[0].name)
+					for each(var roomjid:Object in disco.items)
 					{
 						_room.chatManager=chatManager;
-						_room.join(new UnescapedJID(disco.items[0].jid) );						
-						//if(_room )chatroom.initRoom();						
-					}					
+						_room.join(new UnescapedJID(roomjid.jid) );
+					}				
 				}
 			}
 			private function onLogin( event:LoginEvent):void

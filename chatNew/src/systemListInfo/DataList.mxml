@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+	<mx:Style source="AeonGraphical.css" />
+	<mx:Script>  
+		<![CDATA[  
+			import mx.collections.ArrayCollection;  
+			// 当前需要显示的记录  
+			[Bindable]  
+			private var mypagedata:ArrayCollection = new ArrayCollection();  
+			[Bindable]  
+			public var columns:Array; // 数据集合  
+			public var dataProvider:ArrayCollection; // 所有数据  
+			public var pageCount:int = 6;// 每页包含的记录数，默认6条  
+			public var curPage:int; // 当前页码  
+			public var totalPage:int; // 总页数  
+			public var totalCount:int; // 总记录条数  
+			public function initData(value:ArrayCollection):void  
+			{  
+				// 将所有的数据都赋值给 dataProvider 变量  
+				dataProvider = value;  
+				// 移除当前页面中所有数据记录  
+				mypagedata.removeAll();  
+				if(null != dataProvider && dataProvider.length > 0)  
+				{  
+					totalCount = dataProvider.length;  
+					totalPage = (totalCount + pageCount -1)/pageCount;  
+					setPager(0);  
+					inputpage.minimum=1;  
+					inputpage.maximum= totalPage;  
+				}else{  
+					totalCount = 0;  
+					totalPage = 0;  
+					curPage = 0;  
+					inputpage.minimum=0;  
+					inputpage.maximum= 0;  
+					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
+				}  
+			}  
+			public function setPager(value:int):void  
+			{  
+				if(value <0 || (value+1)>totalPage){  
+					return;  
+				}  
+				curPage = value;  
+				// 计算跳转到页面中的第一条记录所在记录中是第几条记录  
+				var curNum : int = value*pageCount;  
+				// 清空当前显示的数据记录  
+				mypagedata.removeAll();  
+				for(var i:int = 0; curNum<dataProvider.length&&i<pageCount; i++,curNum++){  
+					mypagedata.addItem(dataProvider.getItemAt(curNum));  
+				}  
+				var temp:int=curPage+1;  
+				pagedetail.text = "第 "+temp+" 页/共 "+totalPage+" 页 共 "+totalCount+" 条记录";  
+				cudg.dataProvider = mypagedata;  
+			}  
+		]]>  
+	</mx:Script>  
+	<mx:DataGrid id="cudg" columns="{columns}" width="100%" height="100%" />  
+	<mx:HBox verticalAlign="middle" horizontalAlign="center">  
+		<mx:Label text="第 0 页/共 0 页" id="pagedetail" />  
+		<mx:LinkButton label="首页" click="setPager(0);" />  
+		<mx:LinkButton label="上一页" click="setPager(curPage - 1);" />  
+		<mx:LinkButton label="下一页" click="setPager(curPage + 1);" />  
+		<mx:LinkButton label="末页" click="setPager(totalPage - 1);" />  
+		<mx:NumericStepper id="inputpage" stepSize="1" minimum="0" maximum="0" />  
+		<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);" />  
+	</mx:HBox>
+</mx:VBox>

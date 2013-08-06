@@ -3,28 +3,44 @@
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.yourpalmark.chat.data.ChatRoom;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.Application;
 			
+			import org.igniterealtime.xiff.conference.Room;
 			import org.igniterealtime.xiff.core.Browser;
 			import org.igniterealtime.xiff.core.EscapedJID;
 			import org.igniterealtime.xiff.data.IQ;
 			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
+			
+			[Bindable]public var roomCollection:Array=new Array();
 			private function initApp():void
 			{//addRoomListeners();				
 				var server:EscapedJID= new EscapedJID(Application.application.chatManager.conferenceServer );
 				Application.application.browser = new Browser(Application.application.chatManager.connection );
 				Application.application.browser.getServiceItems( server, onGetServiceItems );
 			}
+			private function initAllRoom():void
+			{				
+				room1.roomName.text=roomCollection[0].name;
+				room1.initRoom(roomCollection[0]);
+				room2.roomName.text=roomCollection[1].name;
+				room2.initRoom(roomCollection[1]);		
+				room3.roomName.text=roomCollection[2].name;
+				room3.initRoom(roomCollection[2]);
+				room4.roomName.text=roomCollection[3].name;
+				room4.initRoom(roomCollection[3]);
+			}
 			private function onGetServiceItems(iq:IQ):void
 			{
 				var extensions:Array = iq.getAllExtensions();
 				var disco:ItemDiscoExtension= extensions.length > 0 ? extensions[ 0 ] : null;
-				
+				roomCollection=disco.items;		
 				if( disco )
 				{
-					roomlist.dataProvider=disco.items;				
+					roomlist.dataProvider=disco.items;		
 				}
 			}
 			private function addData(event:MouseEvent):void
@@ -39,8 +55,8 @@
 	</mx:Script>
 	<mx:VBox id="roomListFace" label="会见房间信息" height="100%" width="100%">
 		<!--<mx:HBox>
-			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
-			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
+		<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+		<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
 		</mx:HBox>-->
 		<mx:DataGrid id="roomlist" height="100%" width="100%">
 			<mx:columns>
@@ -50,5 +66,14 @@
 			</mx:columns>
 		</mx:DataGrid>
 	</mx:VBox>	
-	<systemListInfo:moitorPanel visible="false" id="moitorface" horizontalCenter="0" verticalCenter="0"/>
+	<mx:VBox label="会见监控" id="moitorface" creationComplete="initAllRoom()">
+		<mx:HBox height="50%" width="100%">
+			<systemListInfo:roomMoitor id="room1" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room2" height="100%" width="50%"/>
+		</mx:HBox>
+		<mx:HBox height="50%" width="100%">
+			<systemListInfo:roomMoitor id="room3" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room4" height="100%" width="50%"/>
+		</mx:HBox>
+	</mx:VBox>
 </mx:TabNavigator>
