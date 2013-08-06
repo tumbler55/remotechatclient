@@ -95,22 +95,7 @@
 				chatroom.visible=true;
 				var cam:Camera = Camera.getCamera();
 				var vid:Video = new Video();				
-				vid.attachCamera(cam);
-				vid.height=chatroom.myVideo.height;
-				vid.width=chatroom.myVideo.width;
 				
-				
-				var cam1:Camera = Camera.getCamera();
-				var vid1:Video = new Video();
-				vid1.attachCamera(cam1);
-				vid1.height=chatroom.familyVideo1.height;
-				vid1.width=chatroom.familyVideo1.width;
-				
-				var cam2:Camera = Camera.getCamera();
-				var vid2:Video = new Video();
-				vid2.attachCamera(cam2);				
-				 chatroom.myVideo.addChild(vid);
-				chatroom.familyVideo1.addChild(vid1); 
 			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
 			{

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" creationComplete="initData(systemMan)" height="100%">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
@@ -7,39 +7,162 @@
 			import mx.controls.Alert;
 			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",iCard:"313112313",type:0},{id:2,name:"王",email:"wang@1.com",iCard:"5235235",type:1},
 				{id:3,name:"孙",email:"sun@1.com",iCard:"4124124",type:1},{id:4,name:"钱",email:"qian@1.com",iCard:"5235235",type:0}]);
+			
+			import mx.collections.ArrayCollection;  
+			// 当前需要显示的记录  
+			[Bindable]  
+			private var mypagedata:ArrayCollection = new ArrayCollection();  
+			[Bindable]  
+			public var dataProvider:ArrayCollection; // 所有数据  
+			public var pageCount:int = 12;// 每页包含的记录数，默认6条  
+			public var curPage:int; // 当前页码  
+			public var totalPage:int; // 总页数  
+			public var totalCount:int; // 总记录条数  
+			public function initData(value:ArrayCollection):void  
+			{  
+				// 将所有的数据都赋值给 dataProvider 变量  
+				dataProvider = value;  
+				// 移除当前页面中所有数据记录  
+				mypagedata.removeAll();  
+				if(null != dataProvider && dataProvider.length > 0)  
+				{  
+					totalCount = dataProvider.length;  
+					totalPage = (totalCount + pageCount -1)/pageCount;  
+					setPager(0);  
+					inputpage.minimum=1;  
+					inputpage.maximum= totalPage;  
+				}else{  
+					totalCount = 0;  
+					totalPage = 0;  
+					curPage = 0;  
+					inputpage.minimum=0;  
+					inputpage.maximum= 0;  
+					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
+				}  
+			}  
+			public function setPager(value:int):void  
+			{  
+				if(value <0 || (value+1)>totalPage){  
+					return;  
+				}  
+				curPage = value;  
+				// 计算跳转到页面中的第一条记录所在记录中是第几条记录  
+				var curNum : int = value*pageCount;  
+				// 清空当前显示的数据记录  
+				mypagedata.removeAll();  
+				for(var i:int = 0; curNum<dataProvider.length&&i<pageCount; i++,curNum++){  
+					mypagedata.addItem(dataProvider.getItemAt(curNum));  
+				}  
+				var temp:int=curPage+1;  
+				pagedetail.text = "第 "+temp+" 页/共 "+totalPage+" 页 共 "+totalCount+" 条记录";  
+				crimnalList.dataProvider = mypagedata;  
+			}  
+			//身份证号码验证
+			private function isIdCard(ss:String):Boolean{
+				    var paritybit:Array = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+				    var power_list:Array = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+				    var s:String = ss.toUpperCase().toString();
+				    var power:Number = 0;
+				    for(var i:int=0;i<s.length;i++){
+					     if(i==s.length-1 && s.charAt(i)=="X"){ 
+						      break; 
+					     }
+					     if(s.charAt(i)<'0' || s.charAt(i)>'9'){
+						      return false;
+					     }
+					     if(i<s.length-1){
+						      power += Number(s.charAt(i)) * power_list[i]; 
+					     }
+				    }
+				    var date:Date = new Date();
+				    var year:Number = Number(s.substring(6,10));
+				    if(year<1900 || year>date.getFullYear()){
+					     return false;
+				    }
+				    var month:Number = Number(s.substring(10,12));
+				    if(month<1 || month>12){
+					     return false;    
+				    }
+				    var day:Number = Number(s.substring(12,14));
+				    if(day<1 || day>31){ 
+					     return false; 
+				    }
+				    return s.charAt(s.length - 1) == paritybit[power % 11];
+			   }
+			
 			private function addData(event:MouseEvent):void
 			{
-				Alert.show("新增");
-			}
-			private function deleteData(event:MouseEvent):void
-			{
-				Alert.show("删除");
+				if(isIdCard(idcard.text)&&(uer_name.text!=""))
+				{
+					Alert.show("新增");
+				}
+				else
+				{
+					Alert.show("输入错误或不完整");
+				}
 			}
 		]]>
 	</mx:Script>
-	<mx:VBox height="100%" width="100%" label="犯人信息列表">		
-		<mx:DataGrid dataProvider="{systemMan}" height="100%" width="100%">
-			<mx:columns>
-				<mx:DataGridColumn headerText="选择" width="50">
-					<mx:itemRenderer>
-						<mx:Component>
-							<mx:VBox horizontalAlign="center">
-								<mx:CheckBox>
+	<mx:VBox height="100%" width="100%" label="犯人信息列表">
+		<mx:Label text="犯人信息列表" color="#297A02" fontWeight="bold"/>
+		<mx:VBox width="100%" borderStyle="inset" height="70%">
+			<mx:DataGrid id="crimnalList" height="100%" width="100%">
+				<mx:columns>
+					<mx:DataGridColumn dataField="id" headerText="编号"/>
+					<mx:DataGridColumn dataField="name" headerText="姓名"/>
+					<mx:DataGridColumn dataField="iCard" headerText="身份证"/>
+					<mx:DataGridColumn dataField="email" headerText="EMAIL"/>		
+					<mx:DataGridColumn headerText="操作" width="120">  
+						<mx:itemRenderer>  
+							<mx:Component>  
+								<mx:HBox horizontalCenter="0" verticalCenter="0">  
 									
-								</mx:CheckBox>
-							</mx:VBox>
-						</mx:Component>
-					</mx:itemRenderer>
-				</mx:DataGridColumn>
-				<mx:DataGridColumn dataField="id" headerText="编号"/>
-				<mx:DataGridColumn dataField="name" headerText="姓名"/>
-				<mx:DataGridColumn dataField="iCard" headerText="身份证"/>
-				<mx:DataGridColumn dataField="email" headerText="EMAIL"/>					
-			</mx:columns>
-		</mx:DataGrid>
-		<mx:HBox>
+									<mx:Script>
+										<![CDATA[
+											protected function updateData(event:MouseEvent):void
+											{
+												// TODO Auto-generated method stub
+												//data.state=='待审核'?true:false
+												trace(data.status);												
+											}
+											protected function deleteData(event:MouseEvent):void
+											{
+												// TODO Auto-generated method stub
+												//data.state=='待审核'?true:false
+												trace(data.status);												
+											}
+										]]>
+									</mx:Script>
+									<mx:LinkButton label="修改" click="updateData(event)" textDecoration="underline" color="#36A400"/>
+									<mx:LinkButton label="删除" click="deleteData(event)" textDecoration="underline" color="#36A400"/>									
+								</mx:HBox>  
+							</mx:Component>  
+						</mx:itemRenderer>  
+					</mx:DataGridColumn> 
+				</mx:columns>
+			</mx:DataGrid>
+			<mx:HBox verticalAlign="middle" horizontalAlign="left" width="100%" borderStyle="solid">  
+				<mx:Label text="第 0 页/共 0 页" id="pagedetail" />  
+				<mx:LinkButton label="首页" click="setPager(0);"  color="#36A400"/>  
+				<mx:LinkButton label="上一页" click="setPager(curPage - 1);"  color="#36A400"/>  
+				<mx:LinkButton label="下一页" click="setPager(curPage + 1);"  color="#36A400"/>  
+				<mx:LinkButton label="末页" click="setPager(totalPage - 1);"  color="#36A400"/>  
+				<mx:NumericStepper id="inputpage" stepSize="1" minimum="0" maximum="0" />  
+				<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);"  color="#36A400"/>  
+			</mx:HBox>
+		</mx:VBox>		
+		<mx:HBox height="30%">
+			<mx:FormItem label="姓名">
+				<mx:TextInput id="uer_name" />
+			</mx:FormItem>
+			<mx:FormItem label="身份证">
+				<mx:TextInput id="idcard"/>
+			</mx:FormItem>
+			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+		</mx:HBox>
+		<!--<mx:HBox>
 			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
 			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
-		</mx:HBox>
+		</mx:HBox>-->
 	</mx:VBox>
-</mx:TabNavigator>
+</mx:VBox>

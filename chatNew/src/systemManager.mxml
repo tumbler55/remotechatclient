@@ -15,6 +15,7 @@
 			import org.igniterealtime.xiff.core.Browser;
 			import org.igniterealtime.xiff.core.EscapedJID;
 			import org.igniterealtime.xiff.core.UnescapedJID;
+			import org.igniterealtime.xiff.core.XMPPConnection;
 			import org.igniterealtime.xiff.data.IQ;
 			import org.igniterealtime.xiff.data.Message;
 			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;

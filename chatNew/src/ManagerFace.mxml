@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="100%" creationComplete="initApp()" fontSize="13" title="视频会见系统" height="100%" xmlns:systemListInfo="systemListInfo.*">
+<com:MyPanel xmlns:mx="http://www.adobe.com/2006/mxml" title="视频会见管理系统" width="100%" creationComplete="initApp()" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
 			import mx.events.ListEvent;
 			import mx.messaging.AbstractConsumer;
 			
+			import systemListInfo.backViewList;
 			import systemListInfo.criminalsInfoList;
 			import systemListInfo.familyInfoList;
 			import systemListInfo.monitorViewList;
 			import systemListInfo.systemManagerInfo;
-			import systemListInfo.systemManagerInfo1;
 			import systemListInfo.viewInfoList;
 			public var currentNode:XML;
 			private var treeData:XMLList;
@@ -19,11 +20,11 @@
 			},{id:4,name:"",email:"",phone:"",type:0},{id:5,name:"",email:"",phone:"",type:0},{id:6,name:"",email:"",phone:"",type:1},{id:7,name:"",email:"",phone:"",type:2},{id:8,name:"",email:"",phone:""
 				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
 			private var listData:ArrayCollection=new ArrayCollection();
-			
+			[Bindable]public var menuBarCollection:XMLListCollection;		
 			
 			private function initApp():void
 			{
-				
+				menuBarCollection = new XMLListCollection(menubarXML);
 			}			
 			
 			protected function loadData(event:MouseEvent):void
@@ -32,7 +33,7 @@
 				dataList.removeAllChildren();
 				switch(event.currentTarget.selectedItem.label)
 				{
-					case "人员管理":
+					case "用户管理":
 					{
 						var systemlist:systemManagerInfo=new systemManagerInfo();
 						dataList.addChild(systemlist);
@@ -57,17 +58,25 @@
 						dataList.addChild(viewmonitor);
 					}
 						break;
-					case "聊天记录回看":
+					case "会见记录回看":
 					{
-						
+						var backview:backViewList=new backViewList();
+						dataList.addChild(backview);
 					}
 						break;
 				}			
-			}			
+			}					
+			private var menubarXML:XMLList =
+				<>
+					<menuitem label="注销" data="top">
+					</menuitem>
+					<menuitem label="关闭" data="top">						
+					</menuitem>
+				</>;
 		]]>
-	</mx:Script>		
-	<mx:HDividedBox width="100%" height="100%">
-		<mx:VBox height="100%" width="15%" fontSize="13" borderStyle="inset">
+	</mx:Script>
+	<mx:HDividedBox width="100%" height="100%" top="0" left="0" right="0">
+		<mx:VBox height="100%" width="15%" fontSize="13">
 			<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
 				<mx:dataProvider>
 					<mx:Array>
@@ -75,7 +84,7 @@
 						<mx:Object label="犯人信息"/>
 						<mx:Object label="会见记录"/>
 						<mx:Object label="会见监控"/>
-						<mx:Object label="聊天记录回看"/>
+						<mx:Object label="会见记录回看"/>
 					</mx:Array>
 				</mx:dataProvider>
 			</mx:List>
@@ -91,11 +100,8 @@
 			</mx:Canvas>
 			</mx:Accordion>-->
 		</mx:VBox>
-		<mx:VBox height="100%" width="85%" borderStyle="inset" id="dataList">		
-			<!--<mx:Label id="currentTitle"/>
-			<mx:DataGrid dataProvider="{listData}" width="721" height="240">
-			
-			</mx:DataGrid>-->
+		<mx:VBox height="100%" width="85%" id="dataList" borderStyle="inset">		
+			<mx:Label text="欢迎进入系统" fontSize="18" fontStyle="italic" fontWeight="bold" color="#297A02"/>
 		</mx:VBox>	
 	</mx:HDividedBox>
-</mx:TitleWindow>
+</com:MyPanel>

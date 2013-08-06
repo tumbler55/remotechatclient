@@ -155,7 +155,7 @@ package com.yourpalmark.chat
 
 			connection.username = null;
 			connection.password = null;
-
+			
 			connection.server = serverName;
 			connection.connect();
 

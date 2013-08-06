@@ -18,6 +18,9 @@
     <application path="Aeon.mxml"/>
     <application path="chatClient.mxml"/>
     <application path="systemManager.mxml"/>
+    <application path="video.mxml"/>
+    <application path="XIFFGUI.mxml"/>
+    <application path="viemApplyPage.mxml"/>
   </applications>
   <modules/>
   <buildCSSFiles/>
