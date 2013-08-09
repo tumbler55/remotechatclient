@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" creationComplete="initApp()" height="100%" borderStyle="inset">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Label id="roomName" color="#FF0000" fontSize="12"/>
 	<mx:Script>
@@ -7,6 +7,7 @@
 			import com.yourpalmark.chat.ChatManager;
 			import com.yourpalmark.chat.data.ChatRoom;
 			import com.yourpalmark.chat.data.ChatUser;
+			import com.yourpalmark.chat.data.VideoMonitor;
 			
 			import mx.core.Application;
 			
@@ -18,17 +19,33 @@
 			import org.igniterealtime.xiff.events.RoomEvent;
 			import org.igniterealtime.xiff.util.DateTimeParser;
 			public var _room:ChatRoom=new ChatRoom();
-			private var chatManager;
+			private var _chatManager:ChatManager;
 			[Bindable]public var messageInfo:Sound=new Sound(new URLRequest("msg.mp3"));
+			private var getVideo:VideoMonitor;
+			
+			private function initApp():void
+			{
+				getVideo=new VideoMonitor(crimiralVideo,familyVideo);
+				getVideo.inStream="stream1375702356623";
+				getVideo.outStream="admin";
+			}			
 			public function initRoom(myobject:Object):void
 			{
 				_room.chatManager=Application.application.chatManager;	
 				_room.join(new UnescapedJID(myobject.jid));
-				if( _room ) addRoomListeners();
+				if(_room)
+				{
+					addRoomListeners();
+					invalidateProperties();
+				}
 			}
+			
 			private function addRoomListeners():void
 			{
 				_room.addEventListener( RoomEvent.GROUP_MESSAGE, onMessage, false, 0, true );
+				_room.addEventListener( RoomEvent.USER_JOIN, onUserJoin, false, 0, true );
+				_room.addEventListener( RoomEvent.USER_DEPARTURE, onUserDeparture );
+				_room.removeEventListener( RoomEvent.ROOM_JOIN, onRoomJoin );
 				/* _room.addEventListener( RoomEvent.AFFILIATIONS, onAffiliations, false, 0, true );
 				_room.addEventListener( RoomEvent.CONFIGURE_ROOM, onConfigureRoom, false, 0, true );
 				_room.addEventListener( RoomEvent.CONFIGURE_ROOM_COMPLETE, onConfigureRoomComplete, false, 0, true );
@@ -52,6 +69,24 @@
 				
 				_room.room.addEventListener( org.igniterealtime.xiff.events.PropertyChangeEvent.CHANGE, onPropertyChange, false, 0, true ); */
 			}
+			private function removeRoomListeners():void
+			{
+				_room.removeEventListener(RoomEvent.GROUP_MESSAGE, onMessage);
+				_room.removeEventListener(RoomEvent.USER_JOIN, onUserJoin);
+				_room.removeEventListener(RoomEvent.USER_DEPARTURE, onUserDeparture);
+			}
+			private function onRoomJoin( event:RoomEvent ):void
+			{
+				
+			}
+			private function onUserJoin( event:RoomEvent ):void
+			{
+				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "进入聊天室.</font>");
+			}
+			private function onUserDeparture( event:RoomEvent):void
+			{
+				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "退出聊天室.</font>" );				
+			}
 			private function onMessage( event:RoomEvent):void
 			{
 				var msg:Message = event.data as Message;
@@ -59,26 +94,18 @@
 				updateMessageDisplay(msg.body,msg.from.resource, msg.time );
 			}
 			public function updateMessageDisplay( message:String, jid:String, time:Date ):void
-			{
-				if(messageTextArea.visible==false)
+			{				
+				if( !time ) time = new Date();		
+				if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
 				{
-					messageTextArea.text="";
+					messageInfo.play();
+					messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
 				}
-				else
-				{					
-					if( !time ) time = new Date();		
-					if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
-					{
-						messageInfo.play();
-						messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
-					}
-					else if(Application.application.chatManager.currentUser.displayName==jid)
-					{
-						messageTextArea.htmlText += "<font color='#0000ff'>[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
-					}
-					
-					callLater( updateMessageScrollPosition );
+				else if(Application.application.chatManager.currentUser.displayName==jid)
+				{
+					messageTextArea.htmlText += "<font color='#0000ff'>[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
 				}				
+				callLater( updateMessageScrollPosition );
 			}
 			private function updateMessageScrollPosition():void
 			{
@@ -88,27 +115,20 @@
 			{
 				sendMessage();	
 			}
+			private function handleKeyUp(event:KeyboardEvent):void 
+			{
+				if(event.keyCode == Keyboard.ENTER)
+				{
+					sendMessage();
+				}
+			}
 			private function sendMessage():void
 			{
 				if( inputTextArea.text.length > 0 )
 				{
-					/* var message:Message= new Message(_tojid.escaped, null, null, null, Message.TYPE_CHAT, null );
-					message.from= _fromjid.escaped;
-					message.body = inputTextArea.text; */
-					_room.sendMessage( inputTextArea.text );					
-					//updateMessageDisplay( inputTextArea.text, null,null);
-					
+					_room.sendMessage( inputTextArea.text );
 					callLater( clearTypeArea );
-					callLater( updateScrollPosition );
-					
-					/* var messageEvent:MessageEvent= new MessageEvent();
-					messageEvent.data = message;
-					dispatchEvent( messageEvent ); */
 				}
-			}
-			private function updateScrollPosition():void
-			{
-				messageTextArea.verticalScrollPosition = messageTextArea.maxVerticalScrollPosition;
 			}
 			private function clearTypeArea():void
 			{
@@ -116,18 +136,24 @@
 			}
 			private function cuteMeeting(event):void
 			{
-				_room.room.kickOccupant( "我", "You have been removed from the chat room." );
-				var jid:UnescapedJID=new UnescapedJID("我@dellpc");
-				_room.room.ban( [ jid ] );
+				for each(var person:Object in _room.users.source)
+				{
+					if(_room.chatManager.currentUser.displayName!=person.displayName)
+					{
+						_room.room.kickOccupant(person.displayName, "你被移除" );
+						var jid:UnescapedJID=new UnescapedJID(person.displayName+"@dellpc");
+						_room.room.ban( [jid] );
+					}					
+				}				
 			}
 		]]>
 	</mx:Script>
 	<mx:HBox width="100%" height="100%">
 		<mx:VBox width="20%" height="100%">
 			<mx:Label text="犯人"/>
-			<mx:VideoDisplay width="100%" height="49%" id="myVideo"/>	
+			<mx:VideoDisplay width="100%" height="49%" id="crimiralVideo"/>	
 			<mx:Label text="家属"/>
-			<mx:VideoDisplay width="100%" height="49%" id="familyVideo1"/>
+			<mx:VideoDisplay width="100%" height="49%" id="familyVideo"/>
 		</mx:VBox>
 		<mx:VBox height="100%" width="80%">
 			<mx:TabNavigator width="100%" height="85%">
@@ -139,9 +165,10 @@
 				<mx:Label text="会话结束倒计时:"/>
 				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
 				<mx:Button label="掐断会话" click="cuteMeeting(event)" id="viewOver"/>
+				<mx:ComboBox id="occupantComboBox" width="100%" enabled="false" labelField="displayName" />
 			</mx:HBox>
 			<mx:HBox width="100%" height="10%">
-				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp=""/>
+				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp="handleKeyUp(event)"/>
 				<mx:Button id="sendButton" label="发送" click="onSendClick(event)"/>
 			</mx:HBox>
 		</mx:VBox>

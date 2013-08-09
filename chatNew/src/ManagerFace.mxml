@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com:MyPanel xmlns:mx="http://www.adobe.com/2006/mxml" title="视频会见管理系统" width="100%" creationComplete="initApp()" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
+<com:MyPanel xmlns:mx="http://www.adobe.com/2006/mxml" title="视频会见管理系统" width="100%" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.collections.XMLListCollection;
+			import mx.core.Application;
 			import mx.events.ListEvent;
 			import mx.messaging.AbstractConsumer;
 			
@@ -20,51 +21,72 @@
 			},{id:4,name:"",email:"",phone:"",type:0},{id:5,name:"",email:"",phone:"",type:0},{id:6,name:"",email:"",phone:"",type:1},{id:7,name:"",email:"",phone:"",type:2},{id:8,name:"",email:"",phone:""
 				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
 			private var listData:ArrayCollection=new ArrayCollection();
-			[Bindable]public var menuBarCollection:XMLListCollection;		
-			
-			private function initApp():void
+			public var menuBarCollection:XMLListCollection;		
+			public function initManagerFace():void
 			{
-				menuBarCollection = new XMLListCollection(menubarXML);
+				trace(Application.application.loginInfo.R.email)
+				switch(Application.application.loginInfo.R.email+"")
+				{
+					
+					case "0":
+					{
+						myList.dataProvider=[{label:"用户管理"},{label:"犯人信息"},{label:"会见记录"},{label:"会见监控"},{label:"会见记录回看"}];
+					}
+						break;
+					case "1":
+					{
+						myList.dataProvider=[{label:"会见记录"}];
+					}
+						break;
+					case "2":
+					{
+						myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"}];
+					}
+						break;
+				}
 			}			
 			
 			protected function loadData(event:MouseEvent):void
 			{
-				trace(event.currentTarget.selectedItem.label);
-				dataList.removeAllChildren();
-				switch(event.currentTarget.selectedItem.label)
+				if(event.currentTarget.selectedItem)
 				{
-					case "用户管理":
+					dataList.removeAllChildren();
+					switch(event.currentTarget.selectedItem.label)
 					{
-						var systemlist:systemManagerInfo=new systemManagerInfo();
-						dataList.addChild(systemlist);
-					}
-						break;
-					case "犯人信息":
-					{
-						var criminal:criminalsInfoList=new criminalsInfoList();
-						dataList.addChild(criminal);
-						criminal.label=event.currentTarget.selectedItem.label+"列表";
-					}
-						break;
-					case "会见记录":
-					{
-						var view:viewInfoList=new viewInfoList();
-						dataList.addChild(view);
-					}
-						break;
-					case "会见监控":
-					{
-						var viewmonitor:monitorViewList=new monitorViewList();
-						dataList.addChild(viewmonitor);
-					}
-						break;
-					case "会见记录回看":
-					{
-						var backview:backViewList=new backViewList();
-						dataList.addChild(backview);
-					}
-						break;
-				}			
+						case "用户管理":
+						{
+							var systemlist:systemManagerInfo=new systemManagerInfo();
+							systemlist.getUserCount();
+							dataList.addChild(systemlist);
+						}
+							break;
+						case "犯人信息":
+						{
+							var criminal:criminalsInfoList=new criminalsInfoList();
+							criminal.getUserCount();
+							dataList.addChild(criminal);
+						}
+							break;
+						case "会见记录":
+						{
+							var view:viewInfoList=new viewInfoList();
+							dataList.addChild(view);
+						}
+							break;
+						case "会见监控":
+						{
+							var viewmonitor:monitorViewList=new monitorViewList();
+							dataList.addChild(viewmonitor);
+						}
+							break;
+						case "会见记录回看":
+						{
+							var backview:backViewList=new backViewList();
+							dataList.addChild(backview);
+						}
+							break;
+					}	
+				}
 			}					
 			private var menubarXML:XMLList =
 				<>
@@ -78,15 +100,15 @@
 	<mx:HDividedBox width="100%" height="100%" top="0" left="0" right="0">
 		<mx:VBox height="100%" width="15%" fontSize="13">
 			<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
-				<mx:dataProvider>
-					<mx:Array>
-						<mx:Object label="用户管理"/>
-						<mx:Object label="犯人信息"/>
-						<mx:Object label="会见记录"/>
-						<mx:Object label="会见监控"/>
-						<mx:Object label="会见记录回看"/>
-					</mx:Array>
-				</mx:dataProvider>
+				<!--<mx:dataProvider>
+				<mx:Array>
+				<mx:Object label="用户管理"/>
+				<mx:Object label="犯人信息"/>
+				<mx:Object label="会见记录"/>
+				<mx:Object label="会见监控"/>
+				<mx:Object label="会见记录回看"/>
+				</mx:Array>
+				</mx:dataProvider>-->
 			</mx:List>
 			<!--<mx:Accordion width="100%" height="50%" fontSize="13">
 			<mx:Canvas label="系统管理" width="100%" height="100%">

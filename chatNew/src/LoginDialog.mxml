@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="人员登录" layout="absolute" width="264" height="172">
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="系统管理" layout="absolute" width="264" height="172">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.*;
 			import com.yourpalmark.chat.ChatManager;
 			import com.yourpalmark.chat.data.LoginCredentials;
 			
 			import mx.controls.Alert;
 			import mx.core.Application;
-			[Bindable]private var serverAddress:String="PC-201207272348";
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			[Bindable]private var serverAddress:String="dellpc";
+			
 
 			private function initApp():void
 			{
@@ -18,10 +22,42 @@
 			{
 				if(usernameInput.length == 0 || passwordInput.length == 0) 
 				{
-					Alert.show("用户名或密码错误！");
+					Alert.show("用户名或密码不能为空！");
 					return;
+				}
+				this.identifyCheck();	
+				//this.connect();
+			}
+			private function identifyCheck():void
+			{
+				var userlogin:HTTPService=new HTTPService();
+				userlogin.url="http://localhost:8371/VideoServer/user/userlogin.do";
+				userlogin.useProxy=false;
+				userlogin.method="GET";
+				userlogin.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.username = httpEncoding(usernameInput.text);
+				params.password = httpEncoding(passwordInput.text);
+				userlogin.send(params); 
+			}
+			//对提交给后台的参数进行UTF-8的编码处理
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);		
+				Application.application.loginInfo=res;
+				if(res.S=="OK"){
+					this.connect();
+					var resR=res.R;
+					trace("usrname:"+resR.username);
+					trace("Token:"+resR.token);
+				}else{
+					var resR=res.R;
+					Alert.show("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
 				}				
-				this.connect();
 			}
 			
 			private function clearPage():void
@@ -42,7 +78,7 @@
 			{
 				if(event.keyCode == Keyboard.ENTER)
 				{
-					connect();
+					loginIn();
 				}
 			}
 		]]>
@@ -57,12 +93,12 @@
 		<mx:GridRow>
 			<mx:GridItem id="passwordFieldItem">
 				<mx:Label text="密码:" height="100%" fontWeight="bold" width="40" textAlign="center" fontSize="12"/>
-				<mx:TextInput fontSize="11" width="100%" id="passwordInput" text="123" color="black"  displayAsPassword="true" keyUp="handleKeyUp(event)" />
+				<mx:TextInput fontSize="11" width="100%" id="passwordInput" text="123123" color="black"  displayAsPassword="true" keyUp="handleKeyUp(event)" />
 			</mx:GridItem>
 		</mx:GridRow>  		
 		<mx:GridRow paddingTop="20" paddingLeft="40" width="208">
 			<mx:GridItem>
-				<mx:Button id="login" click="loginIn()" color="#000000" label="登陆" fontWeight="bold" fontSize="12"/>
+				<mx:Button id="login" click="loginIn()" color="#000000" label="登录" fontWeight="bold" fontSize="12"/>
 				<mx:Button id="clean" click="clearPage()" color="#000000" label="清除" fontWeight="bold" fontSize="12"/>
 			</mx:GridItem>
 		</mx:GridRow>

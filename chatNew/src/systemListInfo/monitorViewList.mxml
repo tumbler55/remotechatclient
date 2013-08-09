@@ -23,15 +23,53 @@
 				Application.application.browser.getServiceItems( server, onGetServiceItems );
 			}
 			private function initAllRoom():void
-			{				
-				room1.roomName.text=roomCollection[0].name;
-				room1.initRoom(roomCollection[0]);
-				room2.roomName.text=roomCollection[1].name;
-				room2.initRoom(roomCollection[1]);		
-				room3.roomName.text=roomCollection[2].name;
-				room3.initRoom(roomCollection[2]);
-				room4.roomName.text=roomCollection[3].name;
-				room4.initRoom(roomCollection[3]);
+			{	
+				if(roomCollection)
+				{
+					switch(roomCollection.length+0)
+					{
+						case 0:
+						{}
+							break;
+						case 1:
+						{
+							room1.roomName.text=roomCollection[0].name;
+							room1.initRoom(roomCollection[0]);
+						}
+							break;
+						case 2:
+						{
+							room1.roomName.text=roomCollection[0].name;
+							room1.initRoom(roomCollection[0]);
+							room2.roomName.text=roomCollection[1].name;
+							room2.initRoom(roomCollection[1]);
+						}
+							break;
+						case 3:
+						{
+							room1.roomName.text=roomCollection[0].name;
+							room1.initRoom(roomCollection[0]);
+							room2.roomName.text=roomCollection[1].name;
+							room2.initRoom(roomCollection[1]);		
+							room3.roomName.text=roomCollection[2].name;
+							room3.initRoom(roomCollection[2]);
+						}
+							break;
+						default :
+						{
+							room1.roomName.text=roomCollection[0].name;
+							room1.initRoom(roomCollection[0]);
+							room2.roomName.text=roomCollection[1].name;
+							room2.initRoom(roomCollection[1]);		
+							room3.roomName.text=roomCollection[2].name;
+							room3.initRoom(roomCollection[2]);
+							room4.roomName.text=roomCollection[3].name;
+							room4.initRoom(roomCollection[3]);
+						}
+							break;
+					}
+				}
+				
 			}
 			private function onGetServiceItems(iq:IQ):void
 			{

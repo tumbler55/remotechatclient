@@ -1,13 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="initData(systemMan)" width="100%" height="100%">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="getUserCount()" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.JSON;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
+			import mx.controls.dataGridClasses.DataGridItemRenderer;
+			import mx.core.Application;
+			import mx.events.CloseEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
 			
-			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",iCard:"313112313",criminal:"李四",type:0,status:"待审核"},{id:2,name:"王",email:"wang@1.com",iCard:"5235235",criminal:"李二",type:1,status:"通过"},
-				{id:3,name:"孙",email:"sun@1.com",iCard:"4124124",criminal:"李一",type:1,status:"未通过"},{id:4,name:"钱",email:"qian@1.com",iCard:"5235235",criminal:"李五",type:0,status:"结束"}]);
+			private var loginData:Object=Application.application.loginInfo;
+			[Bindable]private var  requestType:int=0;
+			[Bindable]private var requestService:HTTPService=new HTTPService();
+			public function getUserCount():void
+			{
+				requestType=0;
+				requestService.url="http://localhost:8371/VideoServer/meeting/getTotalCount.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params); 
+			}
+			//对提交给后台的参数进行UTF-8的编码处理
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK")
+				{					
+					switch(requestType)
+					{
+						case 0:
+						{
+							totalCount=res.R;
+							pagedetail.text = "第 "+1+" 页/共 "+(int(totalCount/pageCount)+1)+" 页 共 "+totalCount+" 条记录"; 
+							if(totalCount>0)
+							{
+								this.initData();
+							}
+						}
+							break;
+						case 1:
+						{
+							var resR=res.R;	
+							viewApplyList.dataProvider=resR;	
+						}
+							break;
+						case 2:
+						{
+							Application.application._room.chatManager=Application.application.chatManager;
+							Application.application._room.create(viewApplyList.selectedItem.mID);
+							this.initData();
+						}
+							break;
+						case 2:
+						{
+							this.initData();
+						}
+							break;
+					}
+					
+				}
+				else
+				{
+					var resR=res.R;
+					trace("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
+			
 			// 当前需要显示的记录  
 			[Bindable]  
 			private var mypagedata:ArrayCollection = new ArrayCollection();  
@@ -17,28 +87,21 @@
 			public var curPage:int; // 当前页码  
 			public var totalPage:int; // 总页数  
 			public var totalCount:int; // 总记录条数  
-			public function initData(value:ArrayCollection):void  
-			{  
-				// 将所有的数据都赋值给 dataProvider 变量  
-				dataProvider = value;  
-				// 移除当前页面中所有数据记录  
-				mypagedata.removeAll();  
-				if(null != dataProvider && dataProvider.length > 0)  
-				{  
-					totalCount = dataProvider.length;  
-					totalPage = (totalCount + pageCount -1)/pageCount;  
-					setPager(0);  
-					inputpage.minimum=1;  
-					inputpage.maximum= totalPage;  
-				}else{  
-					totalCount = 0;  
-					totalPage = 0;  
-					curPage = 0;  
-					inputpage.minimum=0;  
-					inputpage.maximum= 0;  
-					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
-				}  
-			}  
+			public function initData():void  
+			{
+				requestType=1;
+				requestService.url="http://localhost:8371/VideoServer/meeting/getContent.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.pageNo = 1;
+				params.pageSize =12;
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params);			
+			} 	
+			
 			public function setPager(value:int):void  
 			{  
 				if(value <0 || (value+1)>totalPage){  
@@ -60,60 +123,102 @@
 			{
 				Alert.show("删除");
 			}
+			
+			protected function viewApplyList_clickHandler(event:MouseEvent):void
+			{
+				if ((event.target == null) || (! (event.target is DataGridItemRenderer))) 
+				{
+					return;
+					//					Alert.show("无效的选择");
+				}
+				if(event.target.data)
+				{
+					pName.text=	event.target.data.pName;
+					pID.text=event.target.data.pID;
+					fName.text=event.target.data.fName;
+					fID.text=event.target.data.fID;
+					relation.text=event.target.data.relation;
+					duration.text=event.target.data.duration;
+					startTime.text=event.target.data.startTime;
+				}				
+			}
+			public function confirmApply(event:MouseEvent):void
+			{
+				Alert.show("是否通过？","会见申请",11,null,handleApply);		
+			}
+			private function handleApply(event:CloseEvent):void
+			{
+				requestService.url="http://localhost:8371/VideoServer/meeting/examineMeeting.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.mID=viewApplyList.selectedItem.mID;				
+				params.myusername =loginData.R.username;
+				params.token =loginData.R.token;
+				
+				switch(event.detail.toString())
+				{					
+					case "1":
+					{
+						requestType=2;
+						params.ispass=1;						
+					}
+						break;
+					case "2":
+					{
+						requestType=3;
+						params.ispass=2;
+					}
+						break;
+					default :
+					{
+						
+					}
+						break;													
+				}
+				requestService.send(params);
+			}
+			
 		]]>
 	</mx:Script>
 	<mx:VBox label="会见记录列表" width="100%">	
 		<mx:Label text="会见记录列表" color="#297A02" fontWeight="bold"/>
 		<mx:VBox height="100%" width="100%" borderStyle="inset">			
-			<mx:DataGrid id="viewApplyList" height="100%" width="100%">
+			<mx:DataGrid id="viewApplyList" height="100%" width="100%" click="viewApplyList_clickHandler(event)">
 				<mx:columns>
-					<mx:DataGridColumn dataField="id" headerText="编号"/>
-					<mx:DataGridColumn dataField="name" headerText="家属"/>
-					<mx:DataGridColumn dataField="iCard" headerText="身份证"/>
-					<mx:DataGridColumn dataField="criminal" headerText="犯人"/>
-					<mx:DataGridColumn dataField="email" headerText="EMAIL"/>	
+					<mx:DataGridColumn dataField="mID" headerText="编号"/>
+					<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
+					<mx:DataGridColumn dataField="pID" headerText="犯人身份证"/>
+					<mx:DataGridColumn dataField="fName" headerText="家属姓名"/>
+					<mx:DataGridColumn dataField="fID" headerText="家属身份证"/>
+					<mx:DataGridColumn dataField="relation" headerText="关系"/>
+					<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
+					<mx:DataGridColumn dataField="startTime" headerText="开始时间">
+						<mx:itemRenderer>  
+							<mx:Component>  
+								<mx:HBox horizontalCenter="0" verticalCenter="0">  
+									<mx:Label text="{data.foreClose?'是':'否'}"/>						
+								</mx:HBox>  
+							</mx:Component>  
+						</mx:itemRenderer> 
+					</mx:DataGridColumn>
+					<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
+					<mx:DataGridColumn dataField="foreClose" headerText="强制关闭">
+						<mx:itemRenderer>  
+							<mx:Component>  
+								<mx:HBox horizontalCenter="0" verticalCenter="0">  
+									<mx:Label text="{data.foreClose?'是':'否'}"/>						
+								</mx:HBox>  
+							</mx:Component>  
+						</mx:itemRenderer> 
+					</mx:DataGridColumn>					
 					<mx:DataGridColumn dataField="status" headerText="状态"/>
 					<mx:DataGridColumn headerText="操作" dataField="status" width="70">  
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									
-									<mx:Script>
-										<![CDATA[
-											import mx.controls.Alert;
-											import mx.core.Application;
-											import mx.events.CloseEvent;
-											protected function confirmApply(event:MouseEvent):void
-											{
-												Alert.show("是否通过？","会见申请",11,null,handleApply);
-												trace(data.status);												
-											}
-											private function handleApply(event:CloseEvent):void
-											{
-												switch(event.detail.toString())
-												{
-													case "1":
-													{
-														data.status="通过";
-														Application.application._room.chatManager=Application.application.chatManager;
-														Application.application._room.create(data.iCard);
-													}
-														break;
-													case "2":
-													{
-														data.status="为通过";
-													}
-													break;
-													default :
-													{
-														
-													}
-													break;													
-												}
-											}
-										]]>
-									</mx:Script>
-									<mx:LinkButton label="处理" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='待审核'}" click="confirmApply(event)"/>
+									<mx:LinkButton label="处理" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  
@@ -133,30 +238,30 @@
 		<mx:VBox height="30%" width="100%">
 			<mx:HBox width="100%">
 				<mx:FormItem label="犯人姓名:">
-					<mx:Label text="{}"/>
+					<mx:Label id="pName" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="犯人身份证:">
-					<mx:Label text="{}"/>
+					<mx:Label id="pID" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="家属姓名:">
-					<mx:Label text="{}"/>
+					<mx:Label id="fName" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="家属身份证:">
-					<mx:Label text="{}"/>
+					<mx:Label id="fID" text=""/>
 				</mx:FormItem>
 			</mx:HBox>	
 			<mx:HBox width="100%">
 				<mx:FormItem label="相互关系:">
-					<mx:Label text="{}"/>
+					<mx:Label id="relation" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="  会见时长:">
-					<mx:Label text="{}"/>
+					<mx:Label id="duration" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="开始时间:">
-					<mx:Label text="{}"/>
+					<mx:Label id="startTime" text=""/>
 				</mx:FormItem>
 				<mx:FormItem label="  申请时间:">
-					<mx:Label text="{}"/>
+					<mx:Label text=""/>
 				</mx:FormItem>
 			</mx:HBox>
 		</mx:VBox>

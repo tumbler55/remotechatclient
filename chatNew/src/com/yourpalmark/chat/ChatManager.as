@@ -26,7 +26,7 @@ package com.yourpalmark.chat
 	public class ChatManager extends EventDispatcher
 	{
 		[Bindable]
-		public static var serverName:String = "talk.google.com";
+		public static var serverName:String = "127.0.0.1";
 
 		[Bindable]
 		public static var serverPort:int = 5222;

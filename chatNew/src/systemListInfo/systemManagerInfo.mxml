@@ -1,64 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" creationComplete="initData(systemMan)">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.JSON;
 			import com.yourpalmark.chat.data.LoginCredentials;
 			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.Application;
-			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",phone:"313112313",type:0},{id:2,name:"王",email:"wang@1.com",phone:"5235235",type:1},
-				{id:3,name:"孙",email:"sun@1.com",phone:"4124124",type:1},{id:4,name:"钱",email:"qian@1.com",phone:"5235235",type:0}]);
-			
+			import mx.events.CloseEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			private var loginData:Object=Application.application.loginInfo;
+			[Bindable]private var  requestType:int=0;
+			[Bindable]private var requestService:HTTPService=new HTTPService();
+			public function getUserCount():void
+			{
+				requestType=0;
+				requestService.url="http://localhost:8371/VideoServer/user/getTotalCount.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				params.email = httpEncoding(loginData.R.email);
+				requestService.send(params); 
+			}
+			//对提交给后台的参数进行UTF-8的编码处理
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK")
+				{
+					
+					switch(requestType)
+					{
+						case 0:
+						{
+							totalCount=res.R;
+							if(totalCount>0)
+							{
+								totalPage = (totalCount + pageCount -1)/pageCount;  
+								setPager(0);  
+								inputpage.minimum=1;  
+								inputpage.maximum= totalPage; 
+								this.initData();								
+							}
+						}
+							break;
+						case 1:
+						{
+							system_man.dataProvider=[];
+							var resR=res.R;	
+							system_man.dataProvider=resR.pageItems;	
+						}
+							break;
+						case 2:
+						{
+							this.getUserCount();
+							Alert.show("新增成功","提示");
+						}
+							break;
+						case 3:
+						{							
+							system_man.dataProvider=null;
+							Alert.show("删除成功！","提示");
+							this.initData();
+						}
+							break;
+					}
+					
+				}
+				else
+				{
+					var resR=res.R;
+					trace("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
 			
 			// 当前需要显示的记录  
 			[Bindable]  
 			private var mypagedata:ArrayCollection = new ArrayCollection();  
 			[Bindable]  
 			public var dataProvider:ArrayCollection; // 所有数据  
-			public var pageCount:int = 12;// 每页包含的记录数，默认6条  
-			public var curPage:int; // 当前页码  
+			public var pageCount:int = 2;// 每页包含的记录数，默认6条  
+			public var curPage:int=1; // 当前页码  
 			public var totalPage:int; // 总页数  
 			public var totalCount:int; // 总记录条数  
-			public function initData(value:ArrayCollection):void  
-			{ 
+			public function initData():void  
+			{
+				requestType=1;
+				requestService.url="http://localhost:8371/VideoServer/user/getContent.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.pageNo = curPage;
+				params.pageSize =pageCount;
+				params.email = httpEncoding(loginData.R.email);
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params);
+				
+				
+				
+				
 				// 将所有的数据都赋值给 dataProvider 变量  
-				dataProvider = value;  
+				
 				// 移除当前页面中所有数据记录  
-				mypagedata.removeAll();  
+				/* mypagedata.removeAll();  
 				if(null != dataProvider && dataProvider.length > 0)  
 				{  
-					totalCount = dataProvider.length;  
-					totalPage = (totalCount + pageCount -1)/pageCount;  
-					setPager(0);  
-					inputpage.minimum=1;  
-					inputpage.maximum= totalPage;  
+				totalCount = dataProvider.length;  
+				totalPage = (totalCount + pageCount -1)/pageCount;  
+				setPager(0);  
+				inputpage.minimum=1;  
+				inputpage.maximum= totalPage;  
 				}else{  
-					totalCount = 0;  
-					totalPage = 0;  
-					curPage = 0;  
-					inputpage.minimum=0;  
-					inputpage.maximum= 0;  
-					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
-				}  
+				totalCount = 0;  
+				totalPage = 0;  
+				curPage = 0;  
+				inputpage.minimum=0;  
+				inputpage.maximum= 0;  
+				pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
+				}   */
 			}  
+			private function resultHandlerContent(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK"){
+					system_man.dataProvider=[];
+					var resR=res.R;	
+					system_man.dataProvider=resR.pageItems;	;
+				}else{
+					var resR=res.R;
+					Alert.show("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
+			
+			
+			
+			
 			public function setPager(value:int):void  
 			{  
 				if(value <0 || (value+1)>totalPage){  
 					return;  
 				}  
-				curPage = value;  
+				curPage = value+1;  
 				// 计算跳转到页面中的第一条记录所在记录中是第几条记录  
-				var curNum : int = value*pageCount;  
-				// 清空当前显示的数据记录  
-				mypagedata.removeAll();  
+				var curNum : int = value*pageCount;  /* 
 				for(var i:int = 0; curNum<dataProvider.length&&i<pageCount; i++,curNum++){  
 					mypagedata.addItem(dataProvider.getItemAt(curNum));  
-				}  
-				var temp:int=curPage+1;  
+				}   */
+				initData();
+				var temp:int=curPage;  
 				pagedetail.text = "第 "+temp+" 页/共 "+totalPage+" 页 共 "+totalCount+" 条记录";  
-				system_man.dataProvider = mypagedata;  
 			} 
 			
 			
@@ -66,9 +169,9 @@
 			
 			private function addData(event:MouseEvent):void
 			{
-				if((uer_name.text=="")||(password.text=="")||(config_password.text==""))
+				if((user_name.text=="")||(password.text=="")||(config_password.text=="")||(user_type.selectedIndex==-1)||(user_account.text==""))
 				{
-					Alert.show("用户名或密码不能为空","提示");
+					Alert.show("请录入完整信息","提示");
 					return;
 				}
 				if(config_password.text!=password.text)
@@ -79,16 +182,44 @@
 				}
 				else
 				{
-					var credentials:LoginCredentials = new LoginCredentials();
-					credentials.username = uer_name.text;
-					credentials.password = password.text;
-					Application.application.chatManager.register( credentials );
+					requestType=2;
+					requestService.url="http://localhost:8371/VideoServer/user/addItem.do";
+					requestService.useProxy=false;
+					requestService.method="POST";
+					requestService.addEventListener("result",resultHandler);
+					var params:URLVariables = new URLVariables();
+					params.username = user_account.text;
+					params.name =user_name.text;
+					params.password = httpEncoding(password.text);
+					params.email = httpEncoding(user_type.selectedIndex.toString());
+					params.myusername = httpEncoding(loginData.R.username);
+					params.token = httpEncoding(loginData.R.token);
+					requestService.send(params);
 				}
-			}
-			private function deleteData(event:MouseEvent):void
+			}	
+			
+			public function deleteData(event:MouseEvent):void
 			{
-				Alert.show("删除");
+				Alert.show("确定删除？","删除人员",12,null,configDel);
 			}
+			private function configDel(event:CloseEvent):void
+			{
+				if(event.detail==Alert.OK)
+				{
+					requestType=3;
+					requestService.url="http://localhost:8371/VideoServer/user/delItem.do";
+					requestService.useProxy=false;
+					requestService.method="GET";
+					requestService.addEventListener("result",resultHandler);
+					var params:URLVariables = new URLVariables();
+					params.username =data.username;
+					params.myusername =loginData.R.username;
+					params.token = loginData.R.token;
+					requestService.send(params); 
+				}				
+			}
+			
+			
 		]]>
 	</mx:Script>
 	<mx:VBox label="系统人员信息列表" height="100%" width="100%">	
@@ -96,32 +227,22 @@
 		<mx:VBox width="100%" height="70%">
 			<mx:DataGrid id="system_man" height="100%" width="100%">
 				<mx:columns>
-					<mx:DataGridColumn dataField="name" headerText="姓名"/>
-					<mx:DataGridColumn dataField="phone" headerText="电话"/>
-					<mx:DataGridColumn dataField="email" headerText="EMAIL"/>	
+					<mx:DataGridColumn dataField="username" headerText="账号"/>
+					<mx:DataGridColumn dataField="name" headerText="名称"/>
+					<mx:DataGridColumn dataField="email" headerText="类型" width="100">
+						<mx:itemRenderer>  
+							<mx:Component>  
+								<mx:HBox horizontalCenter="0" verticalCenter="0">  
+									<mx:Label text="{['管理员','审核员','监控员','犯人','家属'][data.email]}"/>						
+								</mx:HBox>  
+							</mx:Component>  
+						</mx:itemRenderer> 
+					</mx:DataGridColumn>
 					<mx:DataGridColumn headerText="操作" width="120">  
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									
-									<mx:Script>
-										<![CDATA[
-											protected function updateData(event:MouseEvent):void
-											{
-												// TODO Auto-generated method stub
-												//data.state=='待审核'?true:false
-												trace(data.status);												
-											}
-											protected function deleteData(event:MouseEvent):void
-											{
-												// TODO Auto-generated method stub
-												//data.state=='待审核'?true:false
-												trace(data.status);												
-											}
-										]]>
-									</mx:Script>
-									<mx:LinkButton label="修改" click="updateData(event)" textDecoration="underline" color="#36A400"/>
-									<mx:LinkButton label="删除" click="deleteData(event)" textDecoration="underline" color="#36A400"/>									
+									<mx:LinkButton label="删除" click="outerDocument.deleteData(event)" textDecoration="underline" color="#36A400"/>									
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  
@@ -138,9 +259,15 @@
 				<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);"  color="#36A400"/>  
 			</mx:HBox>
 		</mx:VBox>		
-		<mx:HBox height="30%">
-			<mx:FormItem label="用户名">
-				<mx:TextInput id="uer_name" />
+		<mx:HBox height="30%" width="100%">
+			<mx:FormItem label="账号:">
+				<mx:TextInput id="user_account" />
+			</mx:FormItem>
+			<mx:FormItem label="用户名:">
+				<mx:TextInput id="user_name" />
+			</mx:FormItem>
+			<mx:FormItem label="用户类型:">
+				<mx:ComboBox id="user_type" dataProvider="['管理员','审查员','监督员']" text="请选择" selectedIndex="-1"/>
 			</mx:FormItem>
 			<mx:FormItem label="密码">
 				<mx:TextInput id="password" displayAsPassword="true"/>
@@ -149,9 +276,6 @@
 				<mx:TextInput id="config_password" displayAsPassword="true"/>
 			</mx:FormItem>
 			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
-		</mx:HBox>
-		<mx:HBox>			
-			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
 		</mx:HBox>
 	</mx:VBox>	
 </mx:VBox>

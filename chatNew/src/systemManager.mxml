@@ -30,6 +30,7 @@
 			public var _room:ChatRoom;
 			public var browser:Browser;
 			private var targetRoom:String="测试";	
+			[Bindable]public var loginInfo:Object;
 			private function initApp()
 			{
 				setupChatManager();				
@@ -92,11 +93,8 @@
 				
 				login.visible=false;
 				managerface.visible=true;
-				/*var cam:Camera = Camera.getCamera();
-				var vid:Video = new Video();				
-				vid.attachCamera(cam);
-				 vid.height=chatroom.myVideo.height;
-				vid.width=chatroom.myVideo.width; */  
+				managerface.initManagerFace();
+				
 			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
 			{
@@ -109,7 +107,7 @@
 					item.width=chatroom.friendList.width;
 					chatroom.friendList.addChild(item);
 				} */
-				this.initRoom();
+				//this.initRoom();
 			}			
 			//获取聊天信息
 			private function onMessage( event:MessageEvent ):void
@@ -117,13 +115,8 @@
 				var message:Message = event.data as Message;					
 				if( message.type == Message.TYPE_GROUPCHAT )
 				{					
-					//chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
+					trace("内容:"+message.body+"---源头:"+message.from.resource+"---时间:"+message.time )
 				}	 	 		
-				callLater(updateScrollPosition);
-			}
-			private function updateScrollPosition():void
-			{
-				//chatroom.messageTextArea.verticalScrollPosition = chatroom.messageTextArea.maxVerticalScrollPosition;
 			}
 			
 			private function onXIFFError( event:XIFFErrorEvent):void

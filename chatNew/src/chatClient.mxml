@@ -19,6 +19,7 @@
 			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
 			import org.igniterealtime.xiff.events.LoginEvent;
 			import org.igniterealtime.xiff.events.MessageEvent;
+			import org.igniterealtime.xiff.events.RoomEvent;
 			import org.igniterealtime.xiff.events.XIFFErrorEvent;
 			import org.igniterealtime.xiff.im.Roster;
 			import org.igniterealtime.xiff.util.DateTimeParser;
@@ -26,8 +27,8 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			private var browser:Browser;
-			private var targetRoom:String="5";
-			
+			private var targetRoom:String="1";
+			[Bindable]public var loginInfo:Object;
 			private function initApp()
 			{
 				setupChatManager();				
@@ -52,10 +53,15 @@
 				chatManager.addEventListener( RosterEvent.USER_UNAVAILABLE, onUserUnavailable );*/
 				chatManager.chatUserRoster.addEventListener( CollectionEvent.COLLECTION_CHANGE, onChatUserRosterChange ); 				
 			}
+			public function removeChatManagerListener():void
+			{
+				chatManager.removeEventListener( LoginEvent.LOGIN, onLogin );
+				chatManager.removeEventListener( XIFFErrorEvent.XIFF_ERROR, onXIFFError );
+				chatManager.removeEventListener( MessageEvent.MESSAGE, onMessage );
+			}
 			private function initRoom():void
 			{
-				_room = new ChatRoom();
-				//addRoomListeners();				
+				_room = new ChatRoom();			
 				var server:EscapedJID= new EscapedJID( chatManager.conferenceServer );
 				browser = new Browser( chatManager.connection );
 				browser.getServiceItems( server, onGetServiceItems );
@@ -63,17 +69,27 @@
 			private function onGetServiceItems( iq:IQ):void
 			{
 				var extensions:Array = iq.getAllExtensions();
-				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;
-				
+				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;				
 				if( disco )
 				{
 					if(targetRoom==disco.items[0].name)
 					{
 						_room.chatManager=chatManager;
 						_room.join(new UnescapedJID(disco.items[0].jid) );						
-						if(_room )chatroom.initRoom();						
+						if(_room )
+						{
+							_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
+							chatroom.initRoom();
+						}
 					}					
 				}
+			}
+			private function onRoomJoin( event:RoomEvent ):void
+			{
+				login.visible=false;
+				chatroom.visible=true;
+				chatroom.initApp();		
+				_room.removeEventListener(RoomEvent.ROOM_JOIN,onRoomJoin);				
 			}
 			private function onLogin( event:LoginEvent):void
 			{
@@ -88,12 +104,12 @@
 				disconnectButton.enabled = true;
 				connectButton.enabled = false;
 				registerButton.enabled = false; */
-				trace(chatManager.currentUser.jid.bareJID);				
-				chatroom.initApp();				
-				login.visible=false;
-				chatroom.visible=true;
-				var cam:Camera = Camera.getCamera();
-				var vid:Video = new Video();				
+				initRoom();
+				trace(chatManager.currentUser.jid);		
+				
+								
+				/* var cam:Camera = Camera.getCamera();
+				var vid:Video = new Video(); */				
 				
 			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
@@ -108,15 +124,16 @@
 					chatroom.friendList.addChild(item);
 				} */
 				this.initRoom();
-			}			
+			}
 			//获取聊天信息
 			private function onMessage( event:MessageEvent ):void
 			{
-				var message:Message = event.data as Message;					
-				if( message.type == Message.TYPE_GROUPCHAT )
+				var message:Message = event.data as Message;	
+				chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
+				/* if( message.type == Message.TYPE_GROUPCHAT )
 				{					
 					chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
-				}	 	 		
+				} */	 	 		
 				callLater(updateScrollPosition);
 			}
 			private function updateScrollPosition():void
@@ -135,5 +152,5 @@
 		]]>
 	</mx:Script>
 	<local:chatRoom id="chatroom" verticalCenter="0" horizontalCenter="0" visible="false"/>
-	<local:LoginDialog id="login" verticalCenter="0" horizontalCenter="0" visible="true"/>	
+	<local:familyLoginDialog id="login" verticalCenter="0" horizontalCenter="0" visible="true"/>	
 </mx:Application>

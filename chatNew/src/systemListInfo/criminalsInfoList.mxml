@@ -1,14 +1,83 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" creationComplete="initData(systemMan)" height="100%">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.JSON;
+			
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
-			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"zhang@1.com",iCard:"313112313",type:0},{id:2,name:"王",email:"wang@1.com",iCard:"5235235",type:1},
-				{id:3,name:"孙",email:"sun@1.com",iCard:"4124124",type:1},{id:4,name:"钱",email:"qian@1.com",iCard:"5235235",type:0}]);
+			import mx.core.Application;
+			import mx.events.CloseEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			private var loginData:Object=Application.application.loginInfo;
+			[Bindable]private var  requestType:int=0;
+			[Bindable]private var requestService:HTTPService=new HTTPService();
+			public function getUserCount():void
+			{
+				requestType=0;
+				requestService.url="http://localhost:8371/VideoServer/user/getPrisonerTotalCount.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.myusername = httpEncoding(loginData.R.username);
+				params.email = httpEncoding(loginData.R.email);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params); 
+			}
+			//对提交给后台的参数进行UTF-8的编码处理
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK")
+				{	
+					crimnalList.dataProvider=null;				
+					switch(requestType)
+					{
+						case 0:
+						{
+							totalCount=res.R;
+							pagedetail.text = "第 "+1+" 页/共 "+(int(totalCount/pageCount)+1)+" 页 共 "+totalCount+" 条记录"; 
+							if(totalCount>0)
+							{
+								this.initData();
+							}
+						}
+							break;
+						case 1:
+						{							
+							var resR=res.R;	
+							crimnalList.dataProvider=resR.pageItems;	
+						}
+							break;
+						case 2:
+						{
+							this.initData();
+							Alert.show("新增成功","提示");
+						}
+							break;
+						case 3:
+						{
+							Alert.show("删除成功！","提示");
+							this.initData();
+						}
+							break;
+					}
+					
+				}
+				else
+				{
+					var resR=res.R;
+					trace("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
 			
-			import mx.collections.ArrayCollection;  
 			// 当前需要显示的记录  
 			[Bindable]  
 			private var mypagedata:ArrayCollection = new ArrayCollection();  
@@ -18,27 +87,20 @@
 			public var curPage:int; // 当前页码  
 			public var totalPage:int; // 总页数  
 			public var totalCount:int; // 总记录条数  
-			public function initData(value:ArrayCollection):void  
-			{  
-				// 将所有的数据都赋值给 dataProvider 变量  
-				dataProvider = value;  
-				// 移除当前页面中所有数据记录  
-				mypagedata.removeAll();  
-				if(null != dataProvider && dataProvider.length > 0)  
-				{  
-					totalCount = dataProvider.length;  
-					totalPage = (totalCount + pageCount -1)/pageCount;  
-					setPager(0);  
-					inputpage.minimum=1;  
-					inputpage.maximum= totalPage;  
-				}else{  
-					totalCount = 0;  
-					totalPage = 0;  
-					curPage = 0;  
-					inputpage.minimum=0;  
-					inputpage.maximum= 0;  
-					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
-				}  
+			public function initData():void  
+			{
+				requestType=1;
+				requestService.url="http://localhost:8371/VideoServer/user/getPrisonerContent.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.pageNo = 1;
+				params.pageSize =12;
+				params.myusername = httpEncoding(loginData.R.username);
+				params.email = httpEncoding(loginData.R.email);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params);			
 			}  
 			public function setPager(value:int):void  
 			{  
@@ -92,14 +154,54 @@
 			
 			private function addData(event:MouseEvent):void
 			{
-				if(isIdCard(idcard.text)&&(uer_name.text!=""))
+				requestType=2;
+				if(!isIdCard(idcard.text))
 				{
-					Alert.show("新增");
+					Alert.show("身份证号码错误");
+					return;
 				}
+				
+				if(user_name.text=="")
+				{					
+					Alert.show("请输入完整信息");
+					return;
+				}
+				
 				else
 				{
-					Alert.show("输入错误或不完整");
+					requestService.url="http://localhost:8371/VideoServer/user/addItem.do";
+					requestService.useProxy=false;
+					requestService.method="POST";
+					requestService.addEventListener("result",resultHandler);
+					var params:URLVariables = new URLVariables();
+					params.username = idcard.text;
+					params.name =user_name.text;
+					params.password =123;
+					params.email = 3;
+					params.myusername = loginData.R.username;
+					params.token =loginData.R.token;
+					requestService.send(params);
 				}
+			}
+			public function deleteData(event:MouseEvent):void
+			{
+				Alert.show("确定删除？","删除人员",12,null,configDel);
+			}
+			private function configDel(event:CloseEvent):void
+			{
+				if(event.detail==Alert.OK)
+				{
+					requestType=3;
+					requestService.url="http://localhost:8371/VideoServer/user/delItem.do";
+					requestService.useProxy=false;
+					requestService.method="GET";
+					requestService.addEventListener("result",resultHandler);
+					var params:URLVariables = new URLVariables();
+					params.username =data.username;
+					params.myusername =loginData.R.username;
+					params.token = loginData.R.token;
+					requestService.send(params); 
+				}				
 			}
 		]]>
 	</mx:Script>
@@ -108,36 +210,16 @@
 		<mx:VBox width="100%" borderStyle="inset" height="70%">
 			<mx:DataGrid id="crimnalList" height="100%" width="100%">
 				<mx:columns>
-					<mx:DataGridColumn dataField="id" headerText="编号"/>
-					<mx:DataGridColumn dataField="name" headerText="姓名"/>
-					<mx:DataGridColumn dataField="iCard" headerText="身份证"/>
-					<mx:DataGridColumn dataField="email" headerText="EMAIL"/>		
-					<mx:DataGridColumn headerText="操作" width="120">  
+					<mx:DataGridColumn dataField="name" headerText="姓名"/>	
+					<mx:DataGridColumn dataField="username" headerText="身份证"/>							
+					<mx:DataGridColumn headerText="操作">  
 						<mx:itemRenderer>  
 							<mx:Component>  
-								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									
-									<mx:Script>
-										<![CDATA[
-											protected function updateData(event:MouseEvent):void
-											{
-												// TODO Auto-generated method stub
-												//data.state=='待审核'?true:false
-												trace(data.status);												
-											}
-											protected function deleteData(event:MouseEvent):void
-											{
-												// TODO Auto-generated method stub
-												//data.state=='待审核'?true:false
-												trace(data.status);												
-											}
-										]]>
-									</mx:Script>
-									<mx:LinkButton label="修改" click="updateData(event)" textDecoration="underline" color="#36A400"/>
-									<mx:LinkButton label="删除" click="deleteData(event)" textDecoration="underline" color="#36A400"/>									
+								<mx:HBox horizontalCenter="0" verticalCenter="0"> 									
+									<mx:LinkButton label="删除" click="outerDocument.deleteData(event)" textDecoration="underline" color="#36A400"/>									
 								</mx:HBox>  
 							</mx:Component>  
-						</mx:itemRenderer>  
+						</mx:itemRenderer> 
 					</mx:DataGridColumn> 
 				</mx:columns>
 			</mx:DataGrid>
@@ -152,17 +234,17 @@
 			</mx:HBox>
 		</mx:VBox>		
 		<mx:HBox height="30%">
+			<mx:FormItem label="账号">
+				<mx:TextInput id="idcard" />
+			</mx:FormItem>
 			<mx:FormItem label="姓名">
-				<mx:TextInput id="uer_name" />
-			</mx:FormItem>
-			<mx:FormItem label="身份证">
-				<mx:TextInput id="idcard"/>
-			</mx:FormItem>
+				<mx:TextInput id="user_name"/>
+			</mx:FormItem>			
 			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
 		</mx:HBox>
 		<!--<mx:HBox>
-			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
-			<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
+		<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+		<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
 		</mx:HBox>-->
 	</mx:VBox>
 </mx:VBox>

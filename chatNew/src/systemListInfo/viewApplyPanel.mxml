@@ -3,7 +3,11 @@
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.JSON;
+			
 			import mx.controls.Alert;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
 			//身份证号码验证
 			private function isIdCard(ss:String):Boolean{
 				    var paritybit:Array = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
@@ -35,18 +39,48 @@
 					     return false; 
 				    }
 				    return s.charAt(s.length - 1) == paritybit[power % 11];
-			   }
+			   }			
 			
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK"){
+					this.visible=false;
+					Alert.show("申请成功!","提示");
+				}
+				else
+				{
+					var resR=res.R;
+					Alert.show("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
 			private function sendApply(event:MouseEvent):void
 			{
-				if((prisonerID.text+""=="")||(prisonerName.text+""=="")||(fmID.text+""=="")||(fmName.text+""=="")||(Relation.text+""==""))
+				if((prisonerID.text+""=="")||(prisonerName.text+""=="")||(fmID.text+""=="")||(fmName.text+""=="")||(Relation.text+""=="")||(duration.selectedIndex==-1))
 				{
 					Alert.show("请输入完整信息","提示");
 					return;
 				}
 				else if(isIdCard(prisonerID.text)&&isIdCard(fmID.text))
 				{
-					//发送息申请信息
+					var applyservice:HTTPService=new HTTPService();
+					applyservice.url="http://localhost:8371/VideoServer/meeting/applyMeeting.do";
+					applyservice.useProxy=false;
+					applyservice.method="GET";
+					applyservice.addEventListener("result",resultHandler);
+					var params:URLVariables = new URLVariables();
+					params.pID =prisonerID.text; 
+					params.pName =prisonerName.text;
+					params.fID=fmID.text;
+					params.fName=fmName.text;
+					params.relation=Relation.text
+					params.duration=duration.selectedItem.toString();
+					params.startTime=exeDate.text+" "+exeTime.Caption;
+					applyservice.send(params); 
 				}
 				else
 				{
@@ -92,7 +126,7 @@
 				</mx:HBox>				
 			</mx:FormItem>
 		</mx:HBox>
-		<mx:HBox width="100%" paddingTop="20">
+		<mx:HBox width="100%" paddingTop="20" paddingLeft="400">
 			<mx:Button label="申请" click="sendApply(event)"/>
 			<mx:Button label="取消" click="cancelApply(event)"/>
 		</mx:HBox>
