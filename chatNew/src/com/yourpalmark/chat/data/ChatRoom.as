@@ -62,8 +62,7 @@ package com.yourpalmark.chat.data
 			_room.nickname = _chatManager.currentUser.displayName;
 			_room.roomJID = new UnescapedJID( roomName + "@" + _chatManager.conferenceServer );
 			_room.roomName = roomName;
-			_room.connection = _chatManager.connection;
-			
+			_room.connection = _chatManager.connection;		
 			_room.join( true );
 		}
 		

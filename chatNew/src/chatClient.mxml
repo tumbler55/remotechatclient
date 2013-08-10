@@ -27,7 +27,7 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			private var browser:Browser;
-			private var targetRoom:String="1";
+			private var targetRoom:String="36892af2-08f4-4c18-9cfb-51227c034040 ";
 			[Bindable]public var loginInfo:Object;
 			private function initApp()
 			{
@@ -72,16 +72,14 @@
 				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;				
 				if( disco )
 				{
-					if(targetRoom==disco.items[0].name)
+					
+					_room.chatManager=chatManager;
+					_room.join(new UnescapedJID(loginInfo.mID+"@conference.127.0.0.1") );						
+					if(_room )
 					{
-						_room.chatManager=chatManager;
-						_room.join(new UnescapedJID(disco.items[0].jid) );						
-						if(_room )
-						{
-							_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
-							chatroom.initRoom();
-						}
-					}					
+						_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
+						chatroom.initRoom();
+					}				
 				}
 			}
 			private function onRoomJoin( event:RoomEvent ):void
@@ -107,7 +105,7 @@
 				initRoom();
 				trace(chatManager.currentUser.jid);		
 				
-								
+				
 				/* var cam:Camera = Camera.getCamera();
 				var vid:Video = new Video(); */				
 				
@@ -117,11 +115,11 @@
 				//chatroom.friendList.removeAllChildren();
 				/* for each(var perosn:Object in chatManager.roster.source)
 				{
-					var item:FormItem=new FormItem();
-					chatroom._tojid=chatManager.roster.source[0].jid
-					item.label=perosn.nickname;
-					item.width=chatroom.friendList.width;
-					chatroom.friendList.addChild(item);
+				var item:FormItem=new FormItem();
+				chatroom._tojid=chatManager.roster.source[0].jid
+				item.label=perosn.nickname;
+				item.width=chatroom.friendList.width;
+				chatroom.friendList.addChild(item);
 				} */
 				this.initRoom();
 			}
@@ -132,7 +130,7 @@
 				chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
 				/* if( message.type == Message.TYPE_GROUPCHAT )
 				{					
-					chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
+				chatroom.updateMessageDisplay(message.body,message.from.resource, message.time );
 				} */	 	 		
 				callLater(updateScrollPosition);
 			}

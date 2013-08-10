@@ -34,7 +34,7 @@
 				if(Application.application._room)
 				{
 					for each(var person:Object in Application.application._room.users.source)
-					{				
+					{			
 						var myDetail:personInfo=new personInfo();
 						myDetail._name=person.displayName;
 						if(Application.application.chatManager.currentUser.displayName==person.displayName)

@@ -57,8 +57,7 @@
 			}
 			public function initRoom():void
 			{
-				_room = new ChatRoom();
-				//addRoomListeners();				
+				_room = new ChatRoom();		
 				var server:EscapedJID= new EscapedJID( chatManager.conferenceServer );
 				browser = new Browser( chatManager.connection );
 				browser.getServiceItems( server, onGetServiceItems );
@@ -66,8 +65,7 @@
 			private function onGetServiceItems( iq:IQ):void
 			{
 				var extensions:Array = iq.getAllExtensions();
-				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;
-				
+				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;			
 				if( disco )
 				{
 					for each(var roomjid:Object in disco.items)
@@ -76,6 +74,11 @@
 						_room.join(new UnescapedJID(roomjid.jid) );
 					}				
 				}
+			}
+			public function createCrimicalRoom(roomname:String):void
+			{
+				_room.chatManager=chatManager;
+				_room.create(roomname);
 			}
 			private function onLogin( event:LoginEvent):void
 			{
@@ -90,7 +93,7 @@
 				disconnectButton.enabled = true;
 				connectButton.enabled = false;
 				registerButton.enabled = false; */
-				
+				this.initRoom();
 				login.visible=false;
 				managerface.visible=true;
 				managerface.initManagerFace();

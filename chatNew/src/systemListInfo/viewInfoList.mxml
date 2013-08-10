@@ -57,12 +57,10 @@
 							break;
 						case 2:
 						{
-							Application.application._room.chatManager=Application.application.chatManager;
-							Application.application._room.create(viewApplyList.selectedItem.mID);
 							this.initData();
 						}
 							break;
-						case 2:
+						case 3:
 						{
 							this.initData();
 						}
@@ -148,6 +146,7 @@
 			}
 			private function handleApply(event:CloseEvent):void
 			{
+				requestType=2;
 				requestService.url="http://localhost:8371/VideoServer/meeting/examineMeeting.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
@@ -161,6 +160,7 @@
 				{					
 					case "1":
 					{
+						Application.application.createCrimicalRoom(viewApplyList.selectedItem.mID+"");	
 						requestType=2;
 						params.ispass=1;						
 					}
@@ -218,7 +218,7 @@
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:LinkButton label="处理" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
+									<mx:LinkButton label="审核" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  

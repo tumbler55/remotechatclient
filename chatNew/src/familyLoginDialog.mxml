@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="系统管理" layout="absolute" width="264" height="172">
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="人员登陆" layout="absolute" width="292" height="206">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
@@ -11,7 +11,7 @@
 			import mx.core.Application;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
-			[Bindable]private var serverAddress:String="dellpc";
+			[Bindable]private var serverAddress:String="127.0.0.1";			
 			
 
 			private function initApp():void
@@ -20,42 +20,37 @@
 			}
 			private function loginIn():void
 			{
-				if(usernameInput.length == 0 || passwordInput.length == 0) 
+			 	if(usernameInput.length == 0) 
 				{
 					Alert.show("用户名或密码不能为空！");
 					return;
 				}
-				this.identifyCheck();	
 				//this.connect();
+				this.identifyCheck(); 			
 			}
 			private function identifyCheck():void
 			{
 				var userlogin:HTTPService=new HTTPService();
-				userlogin.url="http://localhost:8371/VideoServer/user/userlogin.do";
+				userlogin.url="http://localhost:8371/VideoServer/user/personOrFmlogin.do";
 				userlogin.useProxy=false;
 				userlogin.method="GET";
 				userlogin.addEventListener("result",resultHandler);
 				var params:URLVariables = new URLVariables();
-				params.username = httpEncoding(usernameInput.text);
-				params.password = httpEncoding(passwordInput.text);
+				params.username = usernameInput.text;				
 				userlogin.send(params); 
-			}
-			//对提交给后台的参数进行UTF-8的编码处理
-			private function httpEncoding(param:String):String{
-				return encodeURIComponent(param);
-			}
+			}			
 			private function resultHandler(event:ResultEvent):void{
-				//Alert.show("res:"+event.result);
 				var res:Object= JSON.decode(event.result as String);		
 				Application.application.loginInfo=res;
 				if(res.S=="OK"){
 					this.connect();
 					var resR=res.R;
+					Application.application.loginInfo=resR;
 					trace("usrname:"+resR.username);
 					trace("Token:"+resR.token);
 				}else{
 					var resR=res.R;
-					Alert.show("errDesc:"+resR.errDesc,"提示");
+					Alert.show("提示:"+resR.errDesc,"消息");
 					trace("errCode:"+resR.errCode);
 				}				
 			}
@@ -71,7 +66,7 @@
 				ChatManager.serverPort=5222;
 				var credentials:LoginCredentials = new LoginCredentials();
 				credentials.username = usernameInput.text;
-				credentials.password = passwordInput.text;
+				credentials.password ="123123";
 				Application.application.chatManager.connect( credentials );
 			}
 			private function handleKeyUp(event:KeyboardEvent):void 
@@ -85,20 +80,20 @@
 	</mx:Script>
 	<mx:Grid id="grid" verticalGap="1" backgroundAlpha="0.5" horizontalGap="0" width="100%" height="100%" paddingLeft="20" paddingRight="20" paddingTop="17" paddingBottom="15" styleName="canvas"  >    	
 		<mx:GridRow>
-			<mx:GridItem width="118" paddingRight="0">
-				<mx:Label text="账号:" height="100%" fontWeight="bold" textAlign="center" width="40" fontSize="12"/>
-				<mx:TextInput fontSize="11" width="100%" id="usernameInput" text="admin" color="black" paddingRight="0"  />
+			<mx:GridItem width="100%" paddingRight="0" paddingTop="20">
+				<mx:Label text="身份证:" height="100%" fontWeight="bold" textAlign="center" width="60" fontSize="12"/>
+				<mx:TextInput fontSize="11" width="100%" id="usernameInput" text="510722198503221255" color="black" paddingRight="0"  />
 			</mx:GridItem>
-		</mx:GridRow>   
-		<mx:GridRow>
-			<mx:GridItem id="passwordFieldItem">
+			<!--<mx:GridItem id="passwordFieldItem">
 				<mx:Label text="密码:" height="100%" fontWeight="bold" width="40" textAlign="center" fontSize="12"/>
 				<mx:TextInput fontSize="11" width="100%" id="passwordInput" text="123123" color="black"  displayAsPassword="true" keyUp="handleKeyUp(event)" />
-			</mx:GridItem>
+			</mx:GridItem>-->
+		</mx:GridRow>   
+		<mx:GridRow>			
 		</mx:GridRow>  		
-		<mx:GridRow paddingTop="20" paddingLeft="40" width="208">
-			<mx:GridItem>
-				<mx:Button id="login" click="loginIn()" color="#000000" label="登录" fontWeight="bold" fontSize="12"/>
+		<mx:GridRow paddingTop="20" paddingLeft="50" width="100%">
+			<mx:GridItem width="163">
+				<mx:Button id="login" click="loginIn()" color="#000000" label="登陆" fontWeight="bold" fontSize="12"/>
 				<mx:Button id="clean" click="clearPage()" color="#000000" label="清除" fontWeight="bold" fontSize="12"/>
 			</mx:GridItem>
 		</mx:GridRow>

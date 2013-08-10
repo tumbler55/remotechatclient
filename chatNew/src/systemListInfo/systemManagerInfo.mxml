@@ -15,6 +15,7 @@
 			private var loginData:Object=Application.application.loginInfo;
 			[Bindable]private var  requestType:int=0;
 			[Bindable]private var requestService:HTTPService=new HTTPService();
+			private var countTotal:int=0;
 			public function getUserCount():void
 			{
 				requestType=0;
@@ -42,22 +43,14 @@
 					{
 						case 0:
 						{
-							totalCount=res.R;
-							if(totalCount>0)
-							{
-								totalPage = (totalCount + pageCount -1)/pageCount;  
-								setPager(0);  
-								inputpage.minimum=1;  
-								inputpage.maximum= totalPage; 
-								this.initData();								
-							}
+							countTotal=res.R;
+							this.initData();	
 						}
 							break;
 						case 1:
 						{
-							system_man.dataProvider=[];
 							var resR=res.R;	
-							system_man.dataProvider=resR.pageItems;	
+							initListData(resR.pageItems as ArrayCollection);	
 						}
 							break;
 						case 2:
@@ -67,10 +60,8 @@
 						}
 							break;
 						case 3:
-						{							
-							system_man.dataProvider=null;
+						{	
 							Alert.show("删除成功！","提示");
-							this.initData();
 						}
 							break;
 					}
@@ -90,7 +81,7 @@
 			[Bindable]  
 			public var dataProvider:ArrayCollection; // 所有数据  
 			public var pageCount:int = 2;// 每页包含的记录数，默认6条  
-			public var curPage:int=1; // 当前页码  
+			public var curPage:int=0; // 当前页码  
 			public var totalPage:int; // 总页数  
 			public var totalCount:int; // 总记录条数  
 			public function initData():void  
@@ -101,43 +92,19 @@
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
 				var params:URLVariables = new URLVariables();
-				params.pageNo = curPage;
-				params.pageSize =pageCount;
+				params.pageNo = 1;
+				params.pageSize =countTotal;
 				params.email = httpEncoding(loginData.R.email);
 				params.myusername = httpEncoding(loginData.R.username);
 				params.token = httpEncoding(loginData.R.token);
 				requestService.send(params);
-				
-				
-				
-				
-				// 将所有的数据都赋值给 dataProvider 变量  
-				
-				// 移除当前页面中所有数据记录  
-				/* mypagedata.removeAll();  
-				if(null != dataProvider && dataProvider.length > 0)  
-				{  
-				totalCount = dataProvider.length;  
-				totalPage = (totalCount + pageCount -1)/pageCount;  
-				setPager(0);  
-				inputpage.minimum=1;  
-				inputpage.maximum= totalPage;  
-				}else{  
-				totalCount = 0;  
-				totalPage = 0;  
-				curPage = 0;  
-				inputpage.minimum=0;  
-				inputpage.maximum= 0;  
-				pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
-				}   */
 			}  
 			private function resultHandlerContent(event:ResultEvent):void{
 				//Alert.show("res:"+event.result);
 				var res:Object= JSON.decode(event.result as String);	
 				if(res.S=="OK"){
-					system_man.dataProvider=[];
 					var resR=res.R;	
-					system_man.dataProvider=resR.pageItems;	;
+					initListData(resR.pageItems)
 				}else{
 					var resR=res.R;
 					Alert.show("errDesc:"+resR.errDesc,"提示");
@@ -145,24 +112,45 @@
 				}				
 			}
 			
-			
-			
-			
+			public function initListData(value:ArrayCollection):void  
+			{  
+				// 将所有的数据都赋值给 dataProvider 变量  
+				dataProvider = value;  
+				// 移除当前页面中所有数据记录  
+				mypagedata.removeAll();  
+				if(null != dataProvider && dataProvider.length > 0)  
+				{  
+					totalCount = dataProvider.length;  
+					totalPage = (totalCount + pageCount -1)/pageCount;  
+					setPager(0);  
+					inputpage.minimum=1;  
+					inputpage.maximum= totalPage;  
+				}else{  
+					totalCount = 0;  
+					totalPage = 0;  
+					curPage = 0;  
+					inputpage.minimum=0;  
+					inputpage.maximum= 0;  
+					pagedetail.text = "第 0 页/共 0 页 共 0 条记录";  
+				}  
+			}  
 			public function setPager(value:int):void  
 			{  
 				if(value <0 || (value+1)>totalPage){  
 					return;  
 				}  
-				curPage = value+1;  
+				curPage = value;  
 				// 计算跳转到页面中的第一条记录所在记录中是第几条记录  
-				var curNum : int = value*pageCount;  /* 
+				var curNum : int = value*pageCount;  
+				// 清空当前显示的数据记录  
+				mypagedata.removeAll();  
 				for(var i:int = 0; curNum<dataProvider.length&&i<pageCount; i++,curNum++){  
 					mypagedata.addItem(dataProvider.getItemAt(curNum));  
-				}   */
-				initData();
-				var temp:int=curPage;  
+				}  
+				var temp:int=curPage+1;  
 				pagedetail.text = "第 "+temp+" 页/共 "+totalPage+" 页 共 "+totalCount+" 条记录";  
-			} 
+				system_man.dataProvider = mypagedata;  
+			}  
 			
 			
 			

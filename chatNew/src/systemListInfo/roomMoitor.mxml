@@ -165,7 +165,6 @@
 				<mx:Label text="会话结束倒计时:"/>
 				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
 				<mx:Button label="掐断会话" click="cuteMeeting(event)" id="viewOver"/>
-				<mx:ComboBox id="occupantComboBox" width="100%" enabled="false" labelField="displayName" />
 			</mx:HBox>
 			<mx:HBox width="100%" height="10%">
 				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp="handleKeyUp(event)"/>
