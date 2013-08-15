@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com:MyPanel xmlns:mx="http://www.adobe.com/2006/mxml" title="视频会见管理系统" width="100%" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
 			import mx.collections.ArrayCollection;
 			import mx.collections.XMLListCollection;
 			import mx.core.Application;
+			import mx.core.UIComponent;
+			import mx.events.DividerEvent;
 			import mx.events.ListEvent;
 			import mx.messaging.AbstractConsumer;
 			
@@ -22,15 +24,17 @@
 				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
 			private var listData:ArrayCollection=new ArrayCollection();
 			public var menuBarCollection:XMLListCollection;		
+			private function initApp():void
+			{
+				Application.application.setStyle("backgroundImage", null);
+			}
 			public function initManagerFace():void
 			{
-				trace(Application.application.loginInfo.R.email)
 				switch(Application.application.loginInfo.R.email+"")
-				{
-					
+				{					
 					case "0":
 					{
-						myList.dataProvider=[{label:"用户管理"},{label:"犯人信息"},{label:"会见记录"},{label:"会见监控"},{label:"会见记录回看"}];
+						myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"},{label:"用户管理"},{label:"犯人信息"},{label:"会见记录"}];
 					}
 						break;
 					case "1":
@@ -42,7 +46,7 @@
 					{
 						myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"}];
 					}
-						break;
+						break; 
 				}
 			}			
 			
@@ -53,6 +57,20 @@
 					dataList.removeAllChildren();
 					switch(event.currentTarget.selectedItem.label)
 					{
+						case "会见监控":
+						{
+							var viewmonitor:monitorViewList=new monitorViewList();
+							dataList.addChild(viewmonitor);
+							viewmonitor.getUserCount();
+						}
+							break;
+						case "会见记录回看":
+						{
+							var backview:backViewList=new backViewList();
+							backview.getUserCount();
+							dataList.addChild(backview);
+						}
+							break;
 						case "用户管理":
 						{
 							var systemlist:systemManagerInfo=new systemManagerInfo();
@@ -70,24 +88,25 @@
 						case "会见记录":
 						{
 							var view:viewInfoList=new viewInfoList();
+							view.getUserCount();
 							dataList.addChild(view);
 						}
-							break;
-						case "会见监控":
-						{
-							var viewmonitor:monitorViewList=new monitorViewList();
-							dataList.addChild(viewmonitor);
-						}
-							break;
-						case "会见记录回看":
-						{
-							var backview:backViewList=new backViewList();
-							dataList.addChild(backview);
-						}
-							break;
+							break;						
 					}	
 				}
-			}					
+			}
+			//显示或者隐藏左边栏
+			private function hiddenLeft(event:DividerEvent):void{
+				var child:UIComponent= event.target.getChildAt(0);
+				if(child.width == 0)
+				{
+					expandOut.play();
+				}
+				else
+				{
+					expandIn.play();
+				}
+			}
 			private var menubarXML:XMLList =
 				<>
 					<menuitem label="注销" data="top">
@@ -97,33 +116,44 @@
 				</>;
 		]]>
 	</mx:Script>
-	<mx:HDividedBox width="100%" height="100%" top="0" left="0" right="0">
-		<mx:VBox height="100%" width="15%" fontSize="13">
-			<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
-				<!--<mx:dataProvider>
-				<mx:Array>
-				<mx:Object label="用户管理"/>
-				<mx:Object label="犯人信息"/>
-				<mx:Object label="会见记录"/>
-				<mx:Object label="会见监控"/>
-				<mx:Object label="会见记录回看"/>
-				</mx:Array>
-				</mx:dataProvider>-->
-			</mx:List>
-			<!--<mx:Accordion width="100%" height="50%" fontSize="13">
-			<mx:Canvas label="系统管理" width="100%" height="100%">
-			<mx:Tree width="100%" height="100%" id="system" dataProvider="{}" change="loadData(event)" labelField="@label" showRoot="false"/>
-			</mx:Canvas>
-			<mx:Canvas label="探监申请" width="100%" height="100%">
-			</mx:Canvas>
-			<mx:Canvas label="会见监控" width="100%" height="100%">
-			</mx:Canvas>
-			<mx:Canvas label="记录回看" width="100%" height="100%">
-			</mx:Canvas>
-			</mx:Accordion>-->
-		</mx:VBox>
-		<mx:VBox height="100%" width="85%" id="dataList" borderStyle="inset">		
-			<mx:Label text="欢迎进入系统" fontSize="18" fontStyle="italic" fontWeight="bold" color="#297A02"/>
-		</mx:VBox>	
-	</mx:HDividedBox>
-</com:MyPanel>
+	<mx:Resize id="expandIn" target="{childcontain}" widthTo="0"
+			   duration="500"/>
+	<mx:Resize id="expandOut" target="{childcontain}" widthTo="{this.width*.15}"
+			   duration="500"/>
+	<mx:VBox width="100%" height="100%" backgroundAlpha="1">
+		<mx:ControlBar height="39" width="100%">
+			<mx:Label text="远程视频会见系统" width="100%" fontSize="23" fontWeight="bold" color="#297A02" height="100%" textAlign="left"/>
+			<mx:Button label="关闭"/>
+			<mx:Button label="修改密码"/>
+		</mx:ControlBar>
+		<mx:HDividedBox width="100%" height="100%" dividerPress="hiddenLeft(event)" top="0" left="0" right="0" liveDragging="true">
+			<mx:VBox height="100%" width="15%" fontSize="13" id="childcontain">
+				<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
+					<!--<mx:dataProvider>
+					<mx:Array>
+					<mx:Object label="用户管理"/>
+					<mx:Object label="犯人信息"/>
+					<mx:Object label="会见记录"/>
+					<mx:Object label="会见监控"/>
+					<mx:Object label="会见记录回看"/>
+					</mx:Array>
+					</mx:dataProvider>-->
+				</mx:List>
+				<!--<mx:Accordion width="100%" height="50%" fontSize="13">
+				<mx:Canvas label="系统管理" width="100%" height="100%">
+				<mx:Tree width="100%" height="100%" id="system" dataProvider="{}" change="loadData(event)" labelField="@label" showRoot="false"/>
+				</mx:Canvas>
+				<mx:Canvas label="探监申请" width="100%" height="100%">
+				</mx:Canvas>
+				<mx:Canvas label="会见监控" width="100%" height="100%">
+				</mx:Canvas>
+				<mx:Canvas label="记录回看" width="100%" height="100%">
+				</mx:Canvas>
+				</mx:Accordion>-->
+			</mx:VBox>
+			<mx:VBox height="100%" width="85%" id="dataList" borderStyle="inset">		
+				<mx:Label text="欢迎进入系统" fontSize="18" fontStyle="italic" fontWeight="bold" color="#297A02"/>
+			</mx:VBox>	
+		</mx:HDividedBox>
+	</mx:VBox>	
+</mx:VBox>

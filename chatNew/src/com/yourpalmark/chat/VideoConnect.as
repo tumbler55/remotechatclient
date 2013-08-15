@@ -13,13 +13,16 @@ package com.yourpalmark.chat
 	
 	import mx.controls.Alert;
 	import mx.controls.VideoDisplay;
+	import mx.core.Application;
 	
 	public class VideoConnect extends Sprite
 	{
 		private var netconn:NetConnection;
 		private var good:Boolean;
 		private var netIn:NetStream;
+		private var netServer:NetStream;
 		private var netOut:NetStream;
+		private var netOutSave:NetStream;
 		private var cam:Camera;
 		private var mic:Microphone;
 		private var responder:Responder;
@@ -29,19 +32,24 @@ package com.yourpalmark.chat
 		private var vOut:Video;
 		private var vIn:Video;
 		
+		private var serverVideoDisplay:VideoDisplay;
+		private var serverVideo:Video;
 		
 		public var outStream:String=new String();
 		public var inStream:String=new String();
+		public var serverStream:String=new String();
 		
-		public function VideoConnect(vidOut:VideoDisplay,vidIn:VideoDisplay)
+		public function VideoConnect(vidOut:VideoDisplay,vidIn:VideoDisplay,serverVideoDisplay:VideoDisplay)
 		{
 			if((vidOut==null)||(vidIn==null))
 			{
 				return;
 			}
 			this.vidIn=vidIn;
-			this.vidOut=vidOut;		
-			var rtmpNow:String="rtmp://localhost/oflaDemo";
+			this.vidOut=vidOut;
+			this.serverVideoDisplay=serverVideoDisplay;
+			//this.vidsystemIn=vidsystem;
+			var rtmpNow:String=Application.application.config.videoServer;
 			netconn=new NetConnection;
 			netconn.connect(rtmpNow,"testName");
 			netconn.client=this;
@@ -73,6 +81,37 @@ package com.yourpalmark.chat
 					break; 
 			} 
 		}
+		public function refreshStream(streaminn:String):void
+		{
+			//Play streamed video
+			// 创建回调函数的对象
+			if(!netconn||!netconn.connected||streaminn==outStream)
+				return;
+			var customClient:Object= new Object();
+				customClient.onMetaData = onMetaData;
+//				
+//			if(streaminn==inStream)
+//			{
+//				
+//				netIn=new NetStream(netconn);
+//				netIn.client=customClient;
+//				vIn=new Video();
+//				vIn.width=vidIn.width;
+//				vIn.height=vidIn.height;			
+//				vIn.attachNetStream(netIn);
+//				vidIn.addChild(vIn);
+//				netIn.play(inStream);
+//			}else
+//			{				
+//				netInadmin=new NetStream(netconn);
+//				netInadmin.client=customClient;
+//				vidsystem=new Video();		
+//				vidsystem.attachNetStream(netInadmin);
+//				vidsystemIn.addChild(vidsystem);
+//				netInadmin.play(streaminn);
+//			}
+			
+		}
 		private function onAsyncErrorHandler(evt:AsyncErrorEvent):void   
 		{
 			trace( "AsyncErrorEvent: "+ evt.text);         
@@ -102,7 +141,7 @@ package com.yourpalmark.chat
 				netOut.attachAudio(mic);
 				netOut.attachCamera(cam);
 				vidOut.attachCamera(cam);
-				netOut.publish(outStream, "append");
+				netOut.publish(outStream, "live");
 				
 				//Play streamed video
 				netIn=new NetStream(netconn);
@@ -112,14 +151,28 @@ package com.yourpalmark.chat
 				vIn.height=vidIn.height;			
 				vIn.attachNetStream(netIn);
 				vidIn.addChild(vIn);
-				netIn.play(outStream);
+				netIn.play(inStream);
+				//Play Server video
+				netServer=new NetStream(netconn);
+				netServer.client=customClient;
+				serverVideo=new Video();
+				serverVideo.attachNetStream(netServer);
+				serverVideoDisplay.addChild(serverVideo);
+				netServer.play(serverStream);
+				
+				//Save VIDEO
+				netOutSave=new NetStream(netconn);
+				netOutSave.client=customClient;
+				netOutSave.attachAudio(mic);
+				netOutSave.attachCamera(cam);
+				netOutSave.publish("no"+inStream, "append");
+				trace("no"+inStream);
 			}
 			catch(e:Error)
 			{
 				trace(e);
 			}
-		}
-		
+		}		
 		private function setCam():void
 		{
 			cam=Camera.getCamera();
@@ -135,9 +188,17 @@ package com.yourpalmark.chat
 		
 		private function setMic():void
 		{
-			mic=Microphone.getMicrophone();
-			mic.rate=11;
-			mic.setSilenceLevel(12,2000);
+			mic=Microphone.getMicrophone();		
+			if(!mic)
+			{
+				Alert.show("没有获取到麦克风","提示");
+				return;
+			}		
+			mic.setUseEchoSuppression(true);
+			mic.setLoopBack(true);
+			mic.setSilenceLevel(10, 20000);
+			mic.gain = 60;
+
 		}
 		
 		private function setVid():void

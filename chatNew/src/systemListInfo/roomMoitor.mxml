@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" creationComplete="initApp()" height="100%" borderStyle="inset">
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Label id="roomName" color="#FF0000" fontSize="12"/>
 	<mx:Script>
@@ -9,7 +9,9 @@
 			import com.yourpalmark.chat.data.ChatUser;
 			import com.yourpalmark.chat.data.VideoMonitor;
 			
+			import mx.controls.Alert;
 			import mx.core.Application;
+			import mx.managers.PopUpManager;
 			
 			import org.igniterealtime.xiff.conference.Room;
 			import org.igniterealtime.xiff.core.EscapedJID;
@@ -22,17 +24,18 @@
 			private var _chatManager:ChatManager;
 			[Bindable]public var messageInfo:Sound=new Sound(new URLRequest("msg.mp3"));
 			private var getVideo:VideoMonitor;
-			
 			private function initApp():void
 			{
-				getVideo=new VideoMonitor(crimiralVideo,familyVideo);
-				getVideo.inStream="stream1375702356623";
-				getVideo.outStream="admin";
+				
 			}			
 			public function initRoom(myobject:Object):void
 			{
 				_room.chatManager=Application.application.chatManager;	
-				_room.join(new UnescapedJID(myobject.jid));
+				_room.join(new UnescapedJID(myobject.mID+"@"+_room.chatManager.conferenceServer));
+				getVideo=new VideoMonitor(crimiralVideo,familyVideo,serverVideo);
+				getVideo.inStream=myobject.pID+"";
+				getVideo.outStream=myobject.fID+"";
+				getVideo.serverStream=myobject.mID;
 				if(_room)
 				{
 					addRoomListeners();
@@ -46,6 +49,8 @@
 				_room.addEventListener( RoomEvent.USER_JOIN, onUserJoin, false, 0, true );
 				_room.addEventListener( RoomEvent.USER_DEPARTURE, onUserDeparture );
 				_room.removeEventListener( RoomEvent.ROOM_JOIN, onRoomJoin );
+				_room.addEventListener( RoomEvent.USER_KICKED, onUserKicked, false, 0, true );
+				_room.addEventListener( RoomEvent.USER_BANNED, onUserBanned, false, 0, true );
 				/* _room.addEventListener( RoomEvent.AFFILIATIONS, onAffiliations, false, 0, true );
 				_room.addEventListener( RoomEvent.CONFIGURE_ROOM, onConfigureRoom, false, 0, true );
 				_room.addEventListener( RoomEvent.CONFIGURE_ROOM_COMPLETE, onConfigureRoomComplete, false, 0, true );
@@ -58,8 +63,8 @@
 				_room.addEventListener( RoomEvent.SUBJECT_CHANGE, onSubjectChange, false, 0, true );
 				_room.addEventListener( RoomEvent.USER_DEPARTURE, onUserDeparture, false, 0, true );
 				_room.addEventListener( RoomEvent.USER_JOIN, onUserJoin, false, 0, true );
-				_room.addEventListener( RoomEvent.USER_KICKED, onUserKicked, false, 0, true );
-				_room.addEventListener( RoomEvent.USER_BANNED, onUserBanned, false, 0, true );
+				
+				
 				
 				_room.addEventListener( XIFFErrorEvent.XIFF_ERROR, onXiffError, false, 0, true );
 				
@@ -86,6 +91,14 @@
 			private function onUserDeparture( event:RoomEvent):void
 			{
 				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "退出聊天室.</font>" );				
+			}
+			private function onUserKicked( event:RoomEvent ):void
+			{
+				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "踢出聊天室.</font>" );	
+			}
+			private function onUserBanned( event:RoomEvent ):void
+			{
+				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "账号冻结.</font>" );	
 			}
 			private function onMessage( event:RoomEvent):void
 			{
@@ -146,25 +159,46 @@
 					}					
 				}				
 			}
+			public function zoomOut(event:MouseEvent):void                                                                                                                                               
+			{
+				/* var outmoitor:outMoitor=outMoitor(PopUpManager.createPopUp(this,outMoitor,true));
+				outmoitor.addContent(this as DisplayObject); */
+			}
+			private function voiceControl(event:MouseEvent):void
+			{
+				if(voicecontrol.toolTip=="喊话开启")
+				{
+					voicecontrol.source="assets/icons/volume-muted.png";
+					voicecontrol.toolTip="喊话关闭";
+					getVideo.setMic(100);						
+				}
+				else
+				{
+					voicecontrol.source="assets/icons/volume-open.png";
+					voicecontrol.toolTip="喊话开启";
+					getVideo.setMic(12);	
+				}
+			}
 		]]>
 	</mx:Script>
-	<mx:HBox width="100%" height="100%">
-		<mx:VBox width="20%" height="100%">
+	<mx:HBox width="100%" height="100%" id="panel">
+		<mx:VBox width="25%" height="100%">
+			
 			<mx:Label text="犯人"/>
 			<mx:VideoDisplay width="100%" height="49%" id="crimiralVideo"/>	
 			<mx:Label text="家属"/>
 			<mx:VideoDisplay width="100%" height="49%" id="familyVideo"/>
 		</mx:VBox>
-		<mx:VBox height="100%" width="80%">
-			<mx:TabNavigator width="100%" height="85%">
-				<mx:Canvas label="聊天记录">
-					<mx:TextArea id="messageTextArea" width="100%" height="100%" visible="true" borderStyle="inset" editable="false" />
-				</mx:Canvas>
-			</mx:TabNavigator>		
+		<mx:VBox height="100%" width="75%">
+					<mx:TextArea id="messageTextArea" width="100%" height="85%" visible="true" borderStyle="inset" editable="false" />
+
 			<mx:HBox width="100%" height="5%">
 				<mx:Label text="会话结束倒计时:"/>
 				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
 				<mx:Button label="掐断会话" click="cuteMeeting(event)" id="viewOver"/>
+				<!--<mx:Button label="放大" click="zoomOut(event)"/>-->
+				<mx:Image id="voicecontrol" buttonMode="true" toolTip="喊话开启" click="voiceControl(event)" source="assets/icons/volume-open.png" height="24" width="24"/>
+				<mx:VideoDisplay id="serverVideo" width="0" height="0"/>
 			</mx:HBox>
 			<mx:HBox width="100%" height="10%">
 				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp="handleKeyUp(event)"/>

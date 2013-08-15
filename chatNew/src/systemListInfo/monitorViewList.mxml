@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="initApp()" width="100%" height="100%" borderStyle="inset" xmlns:systemListInfo="systemListInfo.*">
+<mx:TabNavigator xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset" xmlns:systemListInfo="systemListInfo.*">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.yourpalmark.chat.data.ChatRoom;
@@ -15,15 +16,129 @@
 			import org.igniterealtime.xiff.data.IQ;
 			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
 			
-			[Bindable]public var roomCollection:Array=new Array();
-			private function initApp():void
-			{//addRoomListeners();				
-				var server:EscapedJID= new EscapedJID(Application.application.chatManager.conferenceServer );
-				Application.application.browser = new Browser(Application.application.chatManager.connection );
-				Application.application.browser.getServiceItems( server, onGetServiceItems );
+			[Bindable]public var roomCollection:ArrayCollection=new ArrayCollection();
+			
+			import com.adobe.serialization.json.JSON;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.dataGridClasses.DataGridItemRenderer;
+			import mx.core.Application;
+			import mx.events.CloseEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			private var loginData:Object=Application.application.loginInfo;
+			[Bindable]private var  requestType:int=0;
+			[Bindable]private var requestService:HTTPService=new HTTPService();
+			public function getUserCount():void
+			{
+				requestType=0;
+				requestService.url=config.dataServer+"/meeting/getTotalCount.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params); 
 			}
+			//对提交给后台的参数进行UTF-8的编码处理
+			private function httpEncoding(param:String):String{
+				return encodeURIComponent(param);
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK")
+				{		
+					switch(requestType)
+					{						
+						case 0:
+						{
+							totalCount=res.R;
+							pagedetail.text = "第 "+1+" 页/共 "+(int(totalCount/pageCount)+1)+" 页 共 "+totalCount+" 条记录"; 
+							if(totalCount>0)
+							{
+								this.initData();
+							}
+						}
+							break;
+						case 1:
+						{
+							var resR=res.R;	
+							viewApplyList.dataProvider=resR;	
+						}
+							break;
+						case 2:
+						{
+							this.initData();
+						}
+							break;
+						case 3:
+						{
+							this.initData();
+						}
+							break;
+						default :
+						{}
+							break;
+					}
+					
+				}
+				else
+				{
+					var resR=res.R;
+					trace("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
+			
+			// 当前需要显示的记录  
+			[Bindable]  
+			private var mypagedata:ArrayCollection = new ArrayCollection();  
+			[Bindable]  
+			public var dataProvider:ArrayCollection; // 所有数据  
+			public var pageCount:int = 12;// 每页包含的记录数，默认6条  
+			public var curPage:int; // 当前页码  
+			public var totalPage:int; // 总页数  
+			public var totalCount:int; // 总记录条数  
+			public function initData():void  
+			{
+				requestType=1;
+				requestService.url=config.dataServer+"/meeting/getContent.do";
+				requestService.useProxy=false;
+				requestService.method="GET";
+				requestService.addEventListener("result",resultHandler);
+				var params:URLVariables = new URLVariables();
+				params.pageNo = 1;
+				params.pageSize =12;
+				params.myusername = httpEncoding(loginData.R.username);
+				params.token = httpEncoding(loginData.R.token);
+				requestService.send(params);			
+			} 	
+			
+			public function setPager(value:int):void  
+			{  
+				if(value <0 || (value+1)>totalPage){  
+					return;  
+				}  
+				curPage = value;  
+				// 计算跳转到页面中的第一条记录所在记录中是第几条记录  
+				var curNum : int = value*pageCount;  
+				// 清空当前显示的数据记录  
+				mypagedata.removeAll();  
+				for(var i:int = 0; curNum<dataProvider.length&&i<pageCount; i++,curNum++){  
+					mypagedata.addItem(dataProvider.getItemAt(curNum));  
+				}  
+				var temp:int=curPage+1;  
+				pagedetail.text = "第 "+temp+" 页/共 "+totalPage+" 页 共 "+totalCount+" 条记录";  
+				viewApplyList.dataProvider = mypagedata;  
+			} 
 			private function initAllRoom():void
 			{	
+				roomCollection=viewApplyList.dataProvider as ArrayCollection;
+				trace("房间数"+roomCollection.length)
 				if(roomCollection)
 				{
 					switch(roomCollection.length+0)
@@ -33,37 +148,44 @@
 							break;
 						case 1:
 						{
-							room1.roomName.text=roomCollection[0].name;
+							room1.roomName.text=roomCollection[0].pName;							
 							room1.initRoom(roomCollection[0]);
 						}
 							break;
 						case 2:
 						{
-							room1.roomName.text=roomCollection[0].name;
+							room1.roomName.text=roomCollection[0].pName;							
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].name;
+							room2.roomName.text=roomCollection[1].pName;							
 							room2.initRoom(roomCollection[1]);
 						}
 							break;
 						case 3:
 						{
-							room1.roomName.text=roomCollection[0].name;
+							room1.visible=true;
+							room2.visible=true;
+							room3.visible=true;
+							room1.roomName.text=roomCollection[0].pName;							
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].name;
+							room2.roomName.text=roomCollection[1].pName;							
 							room2.initRoom(roomCollection[1]);		
-							room3.roomName.text=roomCollection[2].name;
+							room3.roomName.text=roomCollection[2].pName;
 							room3.initRoom(roomCollection[2]);
 						}
 							break;
 						default :
 						{
-							room1.roomName.text=roomCollection[0].name;
+							room1.visible=true;
+							room2.visible=true;
+							room3.visible=true;
+							room4.visible=true;
+							room1.roomName.text=roomCollection[0].mID;
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].name;
+							room2.roomName.text=roomCollection[1].mID;
 							room2.initRoom(roomCollection[1]);		
-							room3.roomName.text=roomCollection[2].name;
+							room3.roomName.text=roomCollection[2].mID;
 							room3.initRoom(roomCollection[2]);
-							room4.roomName.text=roomCollection[3].name;
+							room4.roomName.text=roomCollection[3].mID;
 							room4.initRoom(roomCollection[3]);
 						}
 							break;
@@ -71,16 +193,7 @@
 				}
 				
 			}
-			private function onGetServiceItems(iq:IQ):void
-			{
-				var extensions:Array = iq.getAllExtensions();
-				var disco:ItemDiscoExtension= extensions.length > 0 ? extensions[ 0 ] : null;
-				roomCollection=disco.items;		
-				if( disco )
-				{
-					roomlist.dataProvider=disco.items;		
-				}
-			}
+			
 			private function addData(event:MouseEvent):void
 			{
 				Alert.show("新增");
@@ -91,27 +204,52 @@
 			}
 		]]>
 	</mx:Script>
-	<mx:VBox id="roomListFace" label="会见房间信息" height="100%" width="100%">
-		<!--<mx:HBox>
-		<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
-		<mx:Button label="删除" icon="@Embed('assets/icons/delete.png')" click="deleteData(event)"/>
-		</mx:HBox>-->
-		<mx:DataGrid id="roomlist" height="100%" width="100%">
+	<mx:VBox id="roomListFace" label="会见列表信息" height="100%" width="100%">
+		<mx:DataGrid id="viewApplyList" height="100%" width="100%">
 			<mx:columns>
-				<mx:DataGridColumn dataField="jid" width="200" headerText="编号"/>
-				<mx:DataGridColumn dataField="name" headerText="房间名称"/>
-				<mx:DataGridColumn dataField="status" headerText="状态"/>	
+				<mx:DataGridColumn dataField="mID" headerText="编号"/>
+				<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
+				<mx:DataGridColumn dataField="pID" headerText="犯人身份证"/>
+				<mx:DataGridColumn dataField="fName" headerText="家属姓名"/>
+				<mx:DataGridColumn dataField="fID" headerText="家属身份证"/>
+				<mx:DataGridColumn dataField="relation" headerText="关系"/>
+				<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
+				<mx:DataGridColumn dataField="startTime" headerText="开始时间">
+					
+				</mx:DataGridColumn>
+				<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
+					<!--<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
+					<mx:itemRenderer>  
+						<mx:Component>  
+							<mx:HBox horizontalCenter="0" verticalCenter="0">  
+								<mx:Label text="{data.foreclose?'是':'否'}"/>						
+							</mx:HBox>  
+						</mx:Component>  
+					</mx:itemRenderer> 
+				</mx:DataGridColumn>					
+			<mx:DataGridColumn dataField="status" headerText="状态"/>
+				<mx:DataGridColumn headerText="操作" dataField="status" width="70"> 
+				</mx:DataGridColumn>   -->
 			</mx:columns>
 		</mx:DataGrid>
+		<mx:HBox verticalAlign="middle" horizontalAlign="left" width="100%" borderStyle="solid">  
+			<mx:Label text="第 0 页/共 0 页" id="pagedetail" />  
+			<mx:LinkButton label="首页" click="setPager(0);"  color="#36A400"/>  
+			<mx:LinkButton label="上一页" click="setPager(curPage - 1);"  color="#36A400"/>  
+			<mx:LinkButton label="下一页" click="setPager(curPage + 1);"  color="#36A400"/>  
+			<mx:LinkButton label="末页" click="setPager(totalPage - 1);"  color="#36A400"/>  
+			<mx:NumericStepper id="inputpage" stepSize="1" minimum="0" maximum="0" />  
+			<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);"  color="#36A400"/>  
+		</mx:HBox>
 	</mx:VBox>	
 	<mx:VBox label="会见监控" id="moitorface" creationComplete="initAllRoom()">
 		<mx:HBox height="50%" width="100%">
-			<systemListInfo:roomMoitor id="room1" height="100%" width="50%"/>
-			<systemListInfo:roomMoitor id="room2" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room1" visible="true" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room2" visible="true" height="100%" width="50%"/>
 		</mx:HBox>
 		<mx:HBox height="50%" width="100%">
-			<systemListInfo:roomMoitor id="room3" height="100%" width="50%"/>
-			<systemListInfo:roomMoitor id="room4" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room3" visible="true" height="100%" width="50%"/>
+			<systemListInfo:roomMoitor id="room4" visible="true" height="100%" width="50%"/>
 		</mx:HBox>
 	</mx:VBox>
 </mx:TabNavigator>

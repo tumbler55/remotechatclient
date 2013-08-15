@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Script>
 		<![CDATA[
@@ -17,7 +18,7 @@
 			public function getUserCount():void
 			{
 				requestType=0;
-				requestService.url="http://localhost:8371/VideoServer/user/getPrisonerTotalCount.do";
+				requestService.url=config.dataServer+"/user/getPrisonerTotalCount.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -90,7 +91,7 @@
 			public function initData():void  
 			{
 				requestType=1;
-				requestService.url="http://localhost:8371/VideoServer/user/getPrisonerContent.do";
+				requestService.url=config.dataServer+"/user/getPrisonerContent.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -169,7 +170,7 @@
 				
 				else
 				{
-					requestService.url="http://localhost:8371/VideoServer/user/addItem.do";
+					requestService.url=config.dataServer+"/user/addItem.do";
 					requestService.useProxy=false;
 					requestService.method="POST";
 					requestService.addEventListener("result",resultHandler);
@@ -192,7 +193,7 @@
 				if(event.detail==Alert.OK)
 				{
 					requestType=3;
-					requestService.url="http://localhost:8371/VideoServer/user/delItem.do";
+					requestService.url=config.dataServer+"/user/delItem.do";
 					requestService.useProxy=false;
 					requestService.method="GET";
 					requestService.addEventListener("result",resultHandler);
@@ -206,7 +207,10 @@
 		]]>
 	</mx:Script>
 	<mx:VBox height="100%" width="100%" label="犯人信息列表">
-		<mx:Label text="犯人信息列表" color="#297A02" fontWeight="bold"/>
+		<mx:HBox height="24">
+			<mx:Label text="犯人信息列表" color="#297A02" fontWeight="bold" height="100%" textAlign="left" fontSize="13"/>
+			<mx:LinkButton label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+		</mx:HBox>		
 		<mx:VBox width="100%" borderStyle="inset" height="70%">
 			<mx:DataGrid id="crimnalList" height="100%" width="100%">
 				<mx:columns>
@@ -240,7 +244,6 @@
 			<mx:FormItem label="姓名">
 				<mx:TextInput id="user_name"/>
 			</mx:FormItem>			
-			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
 		</mx:HBox>
 		<!--<mx:HBox>
 		<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>

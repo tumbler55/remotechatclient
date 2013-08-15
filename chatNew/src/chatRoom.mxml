@@ -10,6 +10,7 @@
 			import mx.controls.Alert;
 			import mx.core.Application;
 			import mx.events.CloseEvent;
+			import mx.events.IndexChangedEvent;
 			
 			import org.igniterealtime.xiff.core.EscapedJID;
 			import org.igniterealtime.xiff.core.UnescapedJID;
@@ -24,13 +25,30 @@
 			private var _room:ChatRoom;
 			public var timeRefresh:Timer=new Timer(1000);
 			private var allTime:int=3600;
-			private var videoconn:VideoConnect
-			[Bindable]public var messageInfo:Sound=new Sound(new URLRequest("msg.mp3"));
+			private var videoconn:VideoConnect;
+			private static const JS_CLOSEHTML:String="function closeWindowns(){" +
+				"closeFlag='application';"+
+				"window.opener=null;"+
+				"window.open('','_self');"+
+				"window.close();"+
+				"}";
 			public function initApp():void
 			{
+				allTime=Application.application.loginInfo.remainingTime/1000;	
 				this.timeLeft();	
-				videoconn=new VideoConnect(myVideo,familyVideo);				
-				videoconn.outStream=Application.application.chatManager.currentUser.displayName;
+				videoconn=new VideoConnect(myVideo,familyVideo,serverVideo);		
+				if(Application.application.loginInfo.email=="3")
+				{
+					videoconn.outStream=Application.application.loginInfo.pID;
+					videoconn.inStream=Application.application.loginInfo.fID;
+				}
+				else
+				{
+					videoconn.outStream=Application.application.loginInfo.fID;
+					videoconn.inStream=Application.application.loginInfo.pID;
+				}
+				trace("流媒体地址:"+videoconn.outStream+videoconn.inStream);
+				
 				if(Application.application._room)
 				{
 					for each(var person:Object in Application.application._room.users.source)
@@ -45,11 +63,9 @@
 						{
 							myDetail._pic="visitor.png";
 							friendList.addChild(myDetail);
-							videoconn.inStream=person.displayName;
 						}					
 					}
-				}
-				
+				}	
 			}
 			private function timeLeft():void
 			{
@@ -72,8 +88,7 @@
 				}
 			}	
 			public function initRoom():void
-			{
-				
+			{				
 				Application.application._room.addEventListener( RoomEvent.USER_DEPARTURE, onUserDeparture );
 				Application.application._room.addEventListener( RoomEvent.USER_JOIN, onUserJoin );
 				Application.application._room.addEventListener( RoomEvent.USER_KICKED, onUserKicked );
@@ -114,7 +129,6 @@
 					{
 						myDetail._pic="visitor.png"
 						friendList.addChild(myDetail);
-						videoconn.inStream=event.nickname;
 					}					
 				}				
 				messageTextArea.htmlText+=( "<font color='#ababab'>" + event.nickname + " 进入聊天室.</font>" );
@@ -122,7 +136,7 @@
 			private function onUserKicked( event:RoomEvent ):void
 			{
 				this.onDisconnectClick();
-				navigateToURL(new URLRequest('javascript:window.opener=null;window.close()'),'_self');
+				ExternalInterface.call(JS_CLOSEHTML);
 			}
 			/* public function get toJID():UnescapedJID
 			{
@@ -175,15 +189,14 @@
 				myVideo.attachCamera(null);
 				Application.application.removeChatManagerListener();
 				Application.application.removeAllChildren();
-				videoconn=new VideoConnect(null,null); 
+				//videoconn=new VideoConnect(null,null,null); 
 				navigateToURL(new URLRequest('javascript:window.close()'),'_self');
 			}
 			public function updateMessageDisplay( message:String, jid:String, time:Date ):void
 			{	
-				if( !time ) time = new Date();		
+				if(!time ) time = new Date();		
 				if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
 				{
-					messageInfo.play();
 					messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
 				}
 				else if(Application.application.chatManager.currentUser.displayName==jid)
@@ -204,26 +217,72 @@
 					sendMessage();
 				}
 			}
+			public function loadpMyInfo(data:Object):void
+			{
+				if(data.email=="3")
+				{
+					pName.text=data.pName;
+					pID.text=data.pID;	
+				}
+				else
+				{
+					pName.text=data.fName;
+					pID.text=data.fID;	
+				}
+				
+			}
+			
+			public function loadpfUserInfo(data:Object):void
+			{
+				if(data.email=="3")
+				{
+					fName.text=data.fName;
+					fID.text=data.fID;	
+				}
+				else
+				{
+					fName.text=data.pName;
+					fID.text=data.pID;	
+				}			
+			}		
 		]]>
 	</mx:Script>
 	<mx:HBox height="100%" width="100%" paddingTop="10" fontSize="12" id="chatPanel">
-		<mx:VBox height="100%" width="20%">
+		<mx:VBox height="100%" width="25%">
 			<mx:TabNavigator width="100%" height="50%">
 				<mx:Canvas label="我的视频" height="100%">
 					<mx:VideoDisplay width="100%" height="100%" id="myVideo"/>
 				</mx:Canvas>
-				<mx:Canvas label="我的信息"></mx:Canvas>	
+				<mx:Canvas label="我的信息" creationComplete="loadpMyInfo(Application.application.loginInfo)">
+					<mx:VBox>
+						<mx:FormItem label="姓名:" >
+							<mx:Label id="pName"/>							
+						</mx:FormItem>
+						<mx:FormItem label="身份证:">
+							<mx:Label id="pID"/>							
+						</mx:FormItem>
+					</mx:VBox>
+				</mx:Canvas>	
 			</mx:TabNavigator>			
 			<mx:TabNavigator width="100%" height="50%">
-				<mx:Canvas label="家属视频" height="100%">
+				<mx:Canvas label="对方视频" height="100%">
 					<mx:VideoDisplay width="100%" height="100%" id="familyVideo"/>
 				</mx:Canvas>
-				<mx:Canvas label="家属信息"></mx:Canvas>	
+				<mx:Canvas label="对方信息" creationComplete="loadpfUserInfo(Application.application.loginInfo)">					
+					<mx:VBox>
+						<mx:FormItem label="姓名:">
+							<mx:Label id="fName"/>							
+						</mx:FormItem>
+						<mx:FormItem label="身份证:">
+							<mx:Label id="fID"/>							
+						</mx:FormItem>
+					</mx:VBox>
+				</mx:Canvas>	
 			</mx:TabNavigator>
 			<mx:VBox id="friendList" height="5%" visible="false" width="100%">
 			</mx:VBox>
 		</mx:VBox>			
-		<mx:VBox height="100%" width="80%">
+		<mx:VBox height="100%" width="75%">
 			<mx:TabNavigator width="100%" height="75%">
 				<mx:Canvas label="聊天记录">
 					<mx:TextArea id="messageTextArea" width="100%" height="100%" borderStyle="inset" editable="false" />
@@ -233,6 +292,7 @@
 				<mx:Label text="会话结束倒计时:"/>
 				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
 				<mx:Button label="会见结束" click="onDisconnectClick()" id="viewOver"/>
+				<mx:VideoDisplay id="serverVideo" height="0" width="0"/>
 			</mx:HBox>
 			<mx:HBox width="100%" height="20%">
 				<mx:TextArea id="inputTextArea" width="100%" height="32" wordWrap="false" borderStyle="inset" editable="true" keyUp="handleKeyUp(event)"/>

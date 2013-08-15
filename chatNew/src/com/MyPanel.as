@@ -7,6 +7,7 @@ package com
 	import mx.controls.Image;
 	import mx.effects.Resize;
 	import mx.effects.easing.Bounce;
+	import mx.managers.PopUpManager;
 	
 	public class MyPanel extends Panel
 	{
@@ -30,9 +31,9 @@ package com
 			super.createChildren();
 			
 			_minbtn = new Image();
-			_minbtn.source="assets/icons/check.png";
-			_minbtn.height=15;
-			_minbtn.width=15;
+			_minbtn.source="assets/icons/close.png";
+			_minbtn.height=16;
+			_minbtn.width=16;
 			_minbtn.addEventListener(MouseEvent.CLICK,resizeHandler);
 			
 			this.rawChildren.addChild(_minbtn);
@@ -54,13 +55,12 @@ package com
 		}
 		
 		private function resizeHandler(evt:MouseEvent):void{
-			
-			
-			eff.heightTo=eff.heightTo==this.titleBar.height?300:this.titleBar.height;
+			PopUpManager.removePopUp(this);
+			/*eff.heightTo=eff.heightTo==this.titleBar.height?300:this.titleBar.height;
 			eff.duration=1000;
 			eff.easingFunction = eff.easingFunction==Bounce.easeOut?Bounce.easeIn:Bounce.easeOut;
 			eff.target=this;
-			eff.play();
+			eff.play();*/
 			
 		}
 	}

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" backgroundImage="background.jpg" creationComplete="initApp()" layout="absolute" minWidth="955" minHeight="600" xmlns:local="*">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml"/>
 	<mx:Script>
 		<![CDATA[
 			import com.personInfo;
@@ -29,10 +30,11 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			public var browser:Browser;
-			private var targetRoom:String="测试";	
 			[Bindable]public var loginInfo:Object;
+			public var dataconfig:Object;
 			private function initApp()
 			{
+				dataconfig=config;
 				setupChatManager();				
 			}
 			private function setupChatManager():void
@@ -66,14 +68,14 @@
 			{
 				var extensions:Array = iq.getAllExtensions();
 				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;			
-				if( disco )
+				/* if( disco )
 				{
 					for each(var roomjid:Object in disco.items)
 					{
 						_room.chatManager=chatManager;
 						_room.join(new UnescapedJID(roomjid.jid) );
 					}				
-				}
+				} */
 			}
 			public function createCrimicalRoom(roomname:String):void
 			{
@@ -96,8 +98,8 @@
 				this.initRoom();
 				login.visible=false;
 				managerface.visible=true;
-				managerface.initManagerFace();
-				
+				managerface.initManagerFace();	
+				this.setStyle("backgroundImage", null);
 			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
 			{

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:Application xmlns:mx="http://www.adobe.com/2006/mxml" backgroundImage="background.jpg" creationComplete="initApp()" layout="absolute" minWidth="955" minHeight="600" xmlns:local="*">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.personInfo;
@@ -27,11 +28,10 @@
 			public var messageDict:Dictionary;
 			public var _room:ChatRoom;
 			private var browser:Browser;
-			private var targetRoom:String="36892af2-08f4-4c18-9cfb-51227c034040 ";
 			[Bindable]public var loginInfo:Object;
 			private function initApp()
 			{
-				setupChatManager();				
+				setupChatManager();	
 			}
 			private function setupChatManager():void
 			{
@@ -60,25 +60,26 @@
 				chatManager.removeEventListener( MessageEvent.MESSAGE, onMessage );
 			}
 			private function initRoom():void
-			{
-				_room = new ChatRoom();			
+			{			
 				var server:EscapedJID= new EscapedJID( chatManager.conferenceServer );
 				browser = new Browser( chatManager.connection );
-				browser.getServiceItems( server, onGetServiceItems );
+				browser.getServiceItems( server, onGetServiceItems ); 
 			}
 			private function onGetServiceItems( iq:IQ):void
 			{
 				var extensions:Array = iq.getAllExtensions();
 				var disco:ItemDiscoExtension = extensions.length > 0 ? extensions[ 0 ] : null;				
-				if( disco )
-				{
-					
+				if( disco)
+				{					_room = new ChatRoom();		
 					_room.chatManager=chatManager;
-					_room.join(new UnescapedJID(loginInfo.mID+"@conference.127.0.0.1") );						
-					if(_room )
+					for each(var item:Object in disco.items)
 					{
-						_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
-						chatroom.initRoom();
+						if(item.name==loginInfo.mID)
+						{
+							_room.join(new UnescapedJID(item.jid));
+							_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
+							chatroom.initRoom();							
+						}
 					}				
 				}
 			}
@@ -86,7 +87,7 @@
 			{
 				login.visible=false;
 				chatroom.visible=true;
-				chatroom.initApp();		
+				chatroom.initApp();				
 				_room.removeEventListener(RoomEvent.ROOM_JOIN,onRoomJoin);				
 			}
 			private function onLogin( event:LoginEvent):void
@@ -102,13 +103,9 @@
 				disconnectButton.enabled = true;
 				connectButton.enabled = false;
 				registerButton.enabled = false; */
-				initRoom();
-				trace(chatManager.currentUser.jid);		
-				
-				
+				this.initRoom();
 				/* var cam:Camera = Camera.getCamera();
 				var vid:Video = new Video(); */				
-				
 			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
 			{
@@ -121,7 +118,6 @@
 				item.width=chatroom.friendList.width;
 				chatroom.friendList.addChild(item);
 				} */
-				this.initRoom();
 			}
 			//获取聊天信息
 			private function onMessage( event:MessageEvent ):void

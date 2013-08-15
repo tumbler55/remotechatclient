@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" width="1034" height="376" creationComplete="centerWindow()" showCloseButton="true" close="closeWindow()">
+	<mx:Model id="config" source="source/config.xml" />
+	<mx:Script>
+		<![CDATA[
+			import mx.events.VideoEvent;
+			import mx.formatters.DateFormatter;
+			import mx.managers.PopUpManager;	
+			private function formatTime(item:Date):String
+			{
+				return dateFormatter.format(item);
+			}
+			public function initWindow(info:Object):void
+			{
+				pVideo.source=config.videoAddress+info.pID+".flv";
+				fVideo.source=config.videoAddress+info.fID+"flv";
+			}
+			public function centerWindow():void
+			{
+				PopUpManager.centerPopUp(this);
+			}
+			
+			public function closeWindow():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+			//视频缓冲完毕 关押人
+			private function videoDisplay_ready():void 
+			{
+				pVideo.addEventListener( VideoEvent.PLAYHEAD_UPDATE,onPlayingVideoUpdate);
+				pTimeBar.visible = true;
+				pVideo.visible=true;
+			}
+			//视频缓冲完毕 探监人
+			private function f_videoDisplay_ready():void 
+			{
+				fVideo.addEventListener( VideoEvent.PLAYHEAD_UPDATE,onPlayingVideoUpdate);
+				fTimeBar.visible = true;
+				fVideo.visible=true;
+			}
+			//视频长度 关押人
+			private function videoDisplay_playheadUpdate():void {
+				var pT:Number = pVideo.playheadTime || 0.1;
+				var tT:Number = pVideo.totalTime;
+				var pTimeMS:Date = new Date(pT * 1000);
+				var tTimeMS:Date = new Date(tT * 1000);				
+				pTimeLabel.text = formatTime(pTimeMS) + " / " + formatTime(tTimeMS);
+			}
+			//视频长度 探监人
+			private function f_videoDisplay_playheadUpdate():void {
+				var pT:Number = fVideo.playheadTime || 0.1;
+				var tT:Number = fVideo.totalTime;
+				var pTimeMS:Date = new Date(pT * 1000);
+				var tTimeMS:Date = new Date(tT * 1000);				
+				fTimeLabel.text = formatTime(pTimeMS) + " / " + formatTime(tTimeMS);
+			}
+			//设定滚动条时间 关押人
+			private function onPlayingVideoUpdate(event:VideoEvent) :void
+			{
+				pControlBar.value = pVideo.playheadTime;
+			}
+			//设定滚动条时间 探监人
+			private function f_onPlayingVideoUpdate(event:VideoEvent) :void
+			{
+				fControlBar.value = fVideo.playheadTime;
+			}
+			//快进 关押人
+			private function slider_thumbPress():void
+			{
+				pVideo.removeEventListener( VideoEvent.PLAYHEAD_UPDATE, onPlayingVideoUpdate ); 
+				pVideo.pause();
+			}
+			//快进 探监人
+			private function f_slider_thumbPress():void
+			{
+				fVideo.removeEventListener( VideoEvent.PLAYHEAD_UPDATE, f_onPlayingVideoUpdate ); 
+				fVideo.pause();
+			}
+			//关押人
+			private function slider_thumbRelease():void
+			{
+				pVideo.addEventListener( VideoEvent.PLAYHEAD_UPDATE, onPlayingVideoUpdate );
+				pVideo.playheadTime = pControlBar.value;
+				pVideo.play();
+			}
+			//探监人
+			private function f_slider_thumbRelease():void
+			{
+				fVideo.addEventListener( VideoEvent.PLAYHEAD_UPDATE, f_onPlayingVideoUpdate );
+				fVideo.playheadTime = fControlBar.value;
+				fVideo.play();
+			}
+		]]>
+		
+	</mx:Script>
+	<mx:DateFormatter id="dateFormatter" formatString="NN:SS" />
+	<mx:Zoom id="zoom"/>
+	<mx:HBox width="100%" height="100%">
+		<mx:VBox height="100%" width="35%">
+			<mx:VideoDisplay width="100%" playheadUpdate="videoDisplay_playheadUpdate()" ready="videoDisplay_ready()" visible="false"
+							 rewind="pVideo.play()" height="100%" id="pVideo" showEffect="{zoom}"/>
+			<mx:ControlBar id="pTimeBar" visible="false" width="100%">
+				<mx:HSlider id="pControlBar" width="100%"
+							allowTrackClick="false"
+							invertThumbDirection="true"
+							liveDragging="false"
+							maximum="{pVideo.totalTime}"
+							minimum="0"
+							thumbPress="slider_thumbPress()"
+							thumbRelease="slider_thumbRelease()"
+							tickInterval="1"
+							value="{pVideo.playheadTime}" />
+				<mx:Label id="pTimeLabel" textAlign="right" />
+			</mx:ControlBar>
+		</mx:VBox>		
+		<mx:TextArea id="messageTextArea" width="30%" height="100%" borderStyle="inset" editable="false" />	
+		<mx:VBox height="100%" width="35%">
+			<mx:VideoDisplay width="100%" playheadUpdate="f_videoDisplay_playheadUpdate()" ready="f_videoDisplay_ready()" visible="false"
+							 rewind="fVideo.play()" height="100%" id="fVideo" showEffect="{zoom}"/>
+			<mx:ControlBar id="fTimeBar" visible="false" width="100%">
+				<mx:HSlider id="fControlBar" width="100%"
+							allowTrackClick="false"
+							invertThumbDirection="true"
+							liveDragging="false"
+							maximum="{fVideo.totalTime}"
+							minimum="0"
+							thumbPress="f_slider_thumbPress()"
+							thumbRelease="f_slider_thumbRelease()"
+							tickInterval="1"
+							value="{fVideo.playheadTime}" />
+				<mx:Label id="fTimeLabel" textAlign="right" />
+			</mx:ControlBar>
+		</mx:VBox>					
+	</mx:HBox>
+	
+</mx:TitleWindow>

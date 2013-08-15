@@ -120,8 +120,7 @@
 					var domainIndex:int = usernameInput.text.lastIndexOf( "@" );
 					if( domainIndex > -1 ) serverInput.text = usernameInput.text.substring( domainIndex + 1 );
 					ChatManager.serverName = serverInput.text;
-				}
-				
+				}				
 				var credentials:LoginCredentials = new LoginCredentials();
 				credentials.username = usernameInput.text;
 				credentials.password = passwordInput.text;
@@ -657,7 +656,7 @@
 						</mx:VBox>
 						<mx:VBox width="100%" verticalGap="2">
 							<mx:Label text="Password" width="100%" fontWeight="bold" />
-							<mx:TextInput id="passwordInput" width="100%" displayAsPassword="true" keyUp="onKeyUp( event )"  text="123"/>
+							<mx:TextInput id="passwordInput" width="100%" displayAsPassword="true" keyUp="onKeyUp( event )"  text="123123"/>
 						</mx:VBox>
 						<mx:Spacer height="100%" />
 						<mx:HBox width="100%" verticalAlign="bottom">

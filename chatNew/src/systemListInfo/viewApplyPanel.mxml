@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="会见申请" width="575" height="310" xmlns:bases="com.gkhb.gis.views.bases.*" xmlns:com="com.*" fontWeight="normal" fontStyle="normal" fontSize="17">
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" layout="absolute" title="会见申请" creationComplete="init()" width="575" height="310" xmlns:bases="com.gkhb.gis.views.bases.*" xmlns:com="com.*" fontWeight="normal" fontStyle="normal" fontSize="17">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.JSON;
 			
 			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
 			//身份证号码验证
+			private function init():void
+			{
+				
+			}
 			private function isIdCard(ss:String):Boolean{
 				    var paritybit:Array = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
 				    var power_list:Array = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
@@ -68,10 +74,11 @@
 				else if(isIdCard(prisonerID.text)&&isIdCard(fmID.text))
 				{
 					var applyservice:HTTPService=new HTTPService();
-					applyservice.url="http://localhost:8371/VideoServer/meeting/applyMeeting.do";
+					applyservice.url=config.dataServer+"/meeting/applyMeeting.do";
 					applyservice.useProxy=false;
 					applyservice.method="GET";
 					applyservice.addEventListener("result",resultHandler);
+					applyservice.addEventListener(FaultEvent.FAULT,onFault);
 					var params:URLVariables = new URLVariables();
 					params.pID =prisonerID.text; 
 					params.pName =prisonerName.text;
@@ -86,6 +93,10 @@
 				{
 					Alert.show("身份证码不正确","提示");
 				}
+			}
+			private function onFault(event:FaultEvent):void
+			{
+				trace(event.toString());
 			}
 			private function cancelApply(event:MouseEvent):void
 			{
@@ -122,7 +133,7 @@
 			<mx:FormItem label="开始时间:" required="true" textAlign="left" fontWeight="bold">				
 				<mx:HBox>
 					<mx:DateField id="exeDate" selectedDate="{new Date()}"  formatString="YYYY-MM-DD" dayNames="['日','一','二','三','四','五','六']" monthNames='["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"]'/>
-					<com:TimeInput id="exeTime" Caption="00:00:00"/>					
+					<com:TimeInput id="exeTime" Caption="00:00:00" Time="{new Date}"/>					
 				</mx:HBox>				
 			</mx:FormItem>
 		</mx:HBox>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="getUserCount()" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.JSON;
@@ -10,6 +11,7 @@
 			import mx.controls.dataGridClasses.DataGridItemRenderer;
 			import mx.core.Application;
 			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
 			
@@ -19,7 +21,7 @@
 			public function getUserCount():void
 			{
 				requestType=0;
-				requestService.url="http://localhost:8371/VideoServer/messagelog/getTotalCount.do";
+				requestService.url=config.dataServer+"/meeting/getTotalCount.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -90,7 +92,7 @@
 			public function initData():void  
 			{
 				requestType=1;
-				requestService.url="http://localhost:8371/VideoServer/meeting/getContent.do";
+				requestService.url=config.dataServer+"/meeting/getContent.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -123,18 +125,13 @@
 			{
 				Alert.show("删除");
 			}
-			
-			protected function viewApplyList_clickHandler(event:MouseEvent):void
-			{
-				
-			}
 			public function confirmApply(event:MouseEvent):void
 			{
 				Alert.show("是否通过？","会见申请",11,null,handleApply);		
 			}
 			private function handleApply(event:CloseEvent):void
 			{
-				requestService.url="http://localhost:8371/VideoServer/meeting/examineMeeting.do";
+				requestService.url=config.data+"/meeting/examineMeeting.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -165,13 +162,23 @@
 				}
 				requestService.send(params);
 			}
+			public function backViewMeeting(obj:Object):void
+			{
+				trace(obj);
+				var backview:backViewWindow=backViewWindow(PopUpManager.createPopUp(this,backViewWindow,true));
+				//backview.myVideo.source=config.videoAddress+"no.flv";
+				backview.initWindow(obj);
+				backview.title=obj.pName+"会见记录";
+				
+				
+			}
 			
 		]]>
 	</mx:Script>
 	<mx:VBox label="会见记录列表" width="100%">	
 		<mx:Label text="会见记录列表" color="#297A02" fontWeight="bold"/>
-		<mx:VBox height="60%" width="100%" borderStyle="inset">			
-			<mx:DataGrid id="viewApplyList" height="100%" width="100%" click="viewApplyList_clickHandler(event)">
+		<mx:VBox height="313" width="100%" borderStyle="inset">			
+			<mx:DataGrid id="viewApplyList" height="100%" width="100%">
 				<mx:columns>
 					<mx:DataGridColumn dataField="mID" headerText="编号"/>
 					<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
@@ -184,17 +191,17 @@
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreClose?'是':'否'}"/>						
+									<mx:Label text="{data.foreclose?'是':'否'}"/>						
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer> 
 					</mx:DataGridColumn>
 					<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
-					<mx:DataGridColumn dataField="foreClose" headerText="强制关闭">
+					<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreClose?'是':'否'}"/>						
+									<mx:Label text="{data.foreclose?'是':'否'}"/>						
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer> 
@@ -204,7 +211,7 @@
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:LinkButton label="查看" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
+									<mx:LinkButton label="查看" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" click="outerDocument.backViewMeeting(data)"/>
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  
@@ -221,10 +228,5 @@
 				<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);"  color="#36A400"/>  
 			</mx:HBox>
 		</mx:VBox>		
-	</mx:VBox>
-	<mx:HBox height="40%" width="100%">
-		<mx:VideoDisplay width="100%" height="100%" id="myVideo"/>		
-		<mx:TextArea id="messageTextArea" width="100%" height="100%" borderStyle="inset" editable="false" />		
-		<mx:VideoDisplay width="100%" height="100%" id="familyVideo"/>		
-	</mx:HBox>
+	</mx:VBox>	
 </mx:VBox>

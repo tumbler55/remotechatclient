@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com:MyPanel xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:com="com.*" layout="absolute" width="1000" height="600">
+	<mx:Script>
+		<![CDATA[
+			import VideoDemo.VideoObject;
+			
+			import mx.managers.PopUpManager;
+			public function addContent(obj:DisplayObject):void
+			{
+				obj.width=this.width;
+				obj.height=this.height;				
+				test.addChild(obj);
+			}
+			public function closeWindow():void
+			{
+				PopUpManager.removePopUp(this);
+			}
+		]]>
+	</mx:Script>
+	<mx:VBox id="test" width="100%" height="100%"/>		
+</com:MyPanel>

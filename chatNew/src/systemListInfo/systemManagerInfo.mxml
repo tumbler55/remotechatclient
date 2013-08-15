@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.JSON;
 			import com.yourpalmark.chat.data.LoginCredentials;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
 			import mx.controls.Alert;
 			import mx.core.Application;
 			import mx.events.CloseEvent;
@@ -16,10 +18,28 @@
 			[Bindable]private var  requestType:int=0;
 			[Bindable]private var requestService:HTTPService=new HTTPService();
 			private var countTotal:int=0;
+			public var menuBarCollection:XMLListCollection;			
+			private var menubarXML:XMLList =
+				<>
+					<menuitem label="Menu1" data="top">
+						<menuitem label="MenuItem 1-A" data="1A"/>
+						<menuitem label="MenuItem 1-B" data="1B"/>
+					</menuitem>
+					<menuitem label="Menu2" data="top">
+						<menuitem label="MenuItem 2-A" type="check"  data="2A"/>
+						<menuitem type="separator"/>
+						<menuitem label="MenuItem 2-B" >
+							<menuitem label="SubMenuItem 3-A" type="radio"
+								groupName="one" data="3A"/>
+							<menuitem label="SubMenuItem 3-B" type="radio"
+								groupName="one" data="3B"/>
+						</menuitem>
+					</menuitem>
+				</>;
 			public function getUserCount():void
 			{
 				requestType=0;
-				requestService.url="http://localhost:8371/VideoServer/user/getTotalCount.do";
+				requestService.url=config.dataServer+"/user/getTotalCount.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -50,7 +70,7 @@
 						case 1:
 						{
 							var resR=res.R;	
-							initListData(resR.pageItems as ArrayCollection);	
+							system_man.dataProvider=resR.pageItems;	
 						}
 							break;
 						case 2:
@@ -80,14 +100,14 @@
 			private var mypagedata:ArrayCollection = new ArrayCollection();  
 			[Bindable]  
 			public var dataProvider:ArrayCollection; // 所有数据  
-			public var pageCount:int = 2;// 每页包含的记录数，默认6条  
+			public var pageCount:int = 12;// 每页包含的记录数，默认6条  
 			public var curPage:int=0; // 当前页码  
 			public var totalPage:int; // 总页数  
 			public var totalCount:int; // 总记录条数  
 			public function initData():void  
 			{
 				requestType=1;
-				requestService.url="http://localhost:8371/VideoServer/user/getContent.do";
+				requestService.url=config.dataServer+"/user/getContent.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -104,7 +124,8 @@
 				var res:Object= JSON.decode(event.result as String);	
 				if(res.S=="OK"){
 					var resR=res.R;	
-					initListData(resR.pageItems)
+					//initListData(resR.pageItems)
+					system_man.dataProvider=resR.pageItems;
 				}else{
 					var resR=res.R;
 					Alert.show("errDesc:"+resR.errDesc,"提示");
@@ -171,7 +192,7 @@
 				else
 				{
 					requestType=2;
-					requestService.url="http://localhost:8371/VideoServer/user/addItem.do";
+					requestService.url=config.dataServer+"/user/addItem.do";
 					requestService.useProxy=false;
 					requestService.method="POST";
 					requestService.addEventListener("result",resultHandler);
@@ -195,7 +216,7 @@
 				if(event.detail==Alert.OK)
 				{
 					requestType=3;
-					requestService.url="http://localhost:8371/VideoServer/user/delItem.do";
+					requestService.url=config.dataServer+"/user/delItem.do";
 					requestService.useProxy=false;
 					requestService.method="GET";
 					requestService.addEventListener("result",resultHandler);
@@ -211,9 +232,11 @@
 		]]>
 	</mx:Script>
 	<mx:VBox label="系统人员信息列表" height="100%" width="100%">	
-		<mx:Label text="系统人员信息列表" color="#297A02" fontWeight="bold"/>
-		<mx:VBox width="100%" height="70%">
-			<mx:DataGrid id="system_man" height="100%" width="100%">
+		<mx:Label text="系统人员信息列表" color="#297A02" fontWeight="bold"/>		
+		<mx:VBox width="100%" height="70%">			
+			<mx:MenuBar top="0" right="0" left="0" dataProvider="{ menuBarCollection }" labelField="@label" width="100%"/>
+			
+			<mx:DataGrid id="system_man" height="100%" top="0" width="100%">
 				<mx:columns>
 					<mx:DataGridColumn dataField="username" headerText="账号"/>
 					<mx:DataGridColumn dataField="name" headerText="名称"/>

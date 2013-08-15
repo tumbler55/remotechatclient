@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="人员登陆" layout="absolute" width="292" height="206">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.*;
@@ -31,7 +32,7 @@
 			private function identifyCheck():void
 			{
 				var userlogin:HTTPService=new HTTPService();
-				userlogin.url="http://localhost:8371/VideoServer/user/personOrFmlogin.do";
+				userlogin.url=config.dataServer+"/user/personOrFmlogin.do";
 				userlogin.useProxy=false;
 				userlogin.method="GET";
 				userlogin.addEventListener("result",resultHandler);
@@ -62,11 +63,11 @@
 			private function connect():void
 			{
 				login.enabled=false;
-				ChatManager.serverName = "127.0.0.1";
-				ChatManager.serverPort=5222;
+				ChatManager.serverName =config.ip+"";
 				var credentials:LoginCredentials = new LoginCredentials();
 				credentials.username = usernameInput.text;
 				credentials.password ="123123";
+				
 				Application.application.chatManager.connect( credentials );
 			}
 			private function handleKeyUp(event:KeyboardEvent):void 

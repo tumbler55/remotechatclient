@@ -10,6 +10,9 @@ package com.yourpalmark.chat
 	import flash.system.Security;
 	import flash.utils.Timer;
 	
+	import mx.controls.Alert;
+	import mx.modules.Module;
+	
 	import org.igniterealtime.xiff.auth.*;
 	import org.igniterealtime.xiff.collections.ArrayCollection;
 	import org.igniterealtime.xiff.collections.events.CollectionEvent;
@@ -27,7 +30,6 @@ package com.yourpalmark.chat
 	{
 		[Bindable]
 		public static var serverName:String = "127.0.0.1";
-
 		[Bindable]
 		public static var serverPort:int = 5222;
 		
@@ -111,7 +113,7 @@ package com.yourpalmark.chat
 
 		public function get conferenceServer():String
 		{
-			return "conference." + _connection.server;
+			return "conference." + _connection.domain;
 		}
 
 		public function setFBAuthProperties( appID:String, accessToken:String ):void
@@ -131,7 +133,7 @@ package com.yourpalmark.chat
 			connection.tls = ChatManager.useTls;
 			connection.username = XFacebookPlatform.fb_app_id != null ? "u" + username : username;
 			connection.password = credentials.password;
-			connection.domain = domain;
+			connection.domain = "127.0.0.1";
 			connection.server = ChatManager.serverName;
 			connection.port = ChatManager.serverPort;
 			connection.connect();

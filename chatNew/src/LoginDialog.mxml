@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="系统管理" layout="absolute" width="264" height="172">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.*;
@@ -31,7 +32,7 @@
 			private function identifyCheck():void
 			{
 				var userlogin:HTTPService=new HTTPService();
-				userlogin.url="http://localhost:8371/VideoServer/user/userlogin.do";
+				userlogin.url=config.dataServer+"/user/userlogin.do";
 				userlogin.useProxy=false;
 				userlogin.method="GET";
 				userlogin.addEventListener("result",resultHandler);
@@ -67,8 +68,7 @@
 			private function connect():void
 			{
 				login.enabled=false;
-				ChatManager.serverName = "127.0.0.1";
-				ChatManager.serverPort=5222;
+				ChatManager.serverName =config.ip;
 				var credentials:LoginCredentials = new LoginCredentials();
 				credentials.username = usernameInput.text;
 				credentials.password = passwordInput.text;

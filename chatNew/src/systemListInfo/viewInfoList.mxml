@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" creationComplete="getUserCount()" width="100%" height="100%">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
 			import com.adobe.serialization.json.JSON;
@@ -19,13 +20,13 @@
 			public function getUserCount():void
 			{
 				requestType=0;
-				requestService.url="http://localhost:8371/VideoServer/meeting/getTotalCount.do";
+				requestService.url=config.dataServer+"/meeting/getTotalCount.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
 				var params:URLVariables = new URLVariables();
-				params.myusername = httpEncoding(loginData.R.username);
-				params.token = httpEncoding(loginData.R.token);
+				params.myusername =loginData.R.username;
+				params.token =loginData.R.token;
 				requestService.send(params); 
 			}
 			//对提交给后台的参数进行UTF-8的编码处理
@@ -88,7 +89,7 @@
 			public function initData():void  
 			{
 				requestType=1;
-				requestService.url="http://localhost:8371/VideoServer/meeting/getContent.do";
+				requestService.url=config.dataServer+"/meeting/getContent.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -147,7 +148,7 @@
 			private function handleApply(event:CloseEvent):void
 			{
 				requestType=2;
-				requestService.url="http://localhost:8371/VideoServer/meeting/examineMeeting.do";
+				requestService.url=config.dataServer+"/meeting/examineMeeting.do";
 				requestService.useProxy=false;
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
@@ -195,24 +196,18 @@
 					<mx:DataGridColumn dataField="relation" headerText="关系"/>
 					<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
 					<mx:DataGridColumn dataField="startTime" headerText="开始时间">
-						<mx:itemRenderer>  
-							<mx:Component>  
-								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreClose?'是':'否'}"/>						
-								</mx:HBox>  
-							</mx:Component>  
-						</mx:itemRenderer> 
+						
 					</mx:DataGridColumn>
 					<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
-					<mx:DataGridColumn dataField="foreClose" headerText="强制关闭">
+					<!--<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreClose?'是':'否'}"/>						
+									<mx:Label text="{data.foreclose?'是':'否'}"/>						
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer> 
-					</mx:DataGridColumn>					
+					</mx:DataGridColumn>	-->				
 					<mx:DataGridColumn dataField="status" headerText="状态"/>
 					<mx:DataGridColumn headerText="操作" dataField="status" width="70">  
 						<mx:itemRenderer>  
