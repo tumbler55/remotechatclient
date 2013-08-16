@@ -21,8 +21,10 @@
 			import org.igniterealtime.xiff.data.IQ;
 			import org.igniterealtime.xiff.data.Message;
 			import org.igniterealtime.xiff.data.disco.ItemDiscoExtension;
+			import org.igniterealtime.xiff.data.forms.FormExtension;
 			import org.igniterealtime.xiff.events.LoginEvent;
 			import org.igniterealtime.xiff.events.MessageEvent;
+			import org.igniterealtime.xiff.events.RoomEvent;
 			import org.igniterealtime.xiff.events.XIFFErrorEvent;
 			import org.igniterealtime.xiff.im.Roster;
 			import org.igniterealtime.xiff.util.DateTimeParser;
@@ -32,6 +34,8 @@
 			public var browser:Browser;
 			[Bindable]public var loginInfo:Object;
 			public var dataconfig:Object;
+			public static var CREATE:String = "create";
+			public var roomSubject:String;
 			private function initApp()
 			{
 				dataconfig=config;
@@ -59,7 +63,8 @@
 			}
 			public function initRoom():void
 			{
-				_room = new ChatRoom();		
+				_room = new ChatRoom();	
+				this.addRoomListeners()
 				var server:EscapedJID= new EscapedJID( chatManager.conferenceServer );
 				browser = new Browser( chatManager.connection );
 				browser.getServiceItems( server, onGetServiceItems );
@@ -101,6 +106,24 @@
 				managerface.initManagerFace();	
 				this.setStyle("backgroundImage", null);
 			}
+			private function addRoomListeners():void
+			{
+				_room.addEventListener( RoomEvent.CONFIGURE_ROOM, onConfigureRoom, false, 0, true );
+				_room.addEventListener( RoomEvent.CONFIGURE_ROOM_COMPLETE, onConfigureRoomComplete, false, 0, true );
+			}
+			private function onConfigureRoom( event:RoomEvent):void
+			{
+				var formExtension:FormExtension= event.data as FormExtension;				
+				_room.room.configure( formExtension );				
+				_room.room.changeSubject(roomSubject);
+				trace(roomSubject);
+			}
+			
+			private function onConfigureRoomComplete( event:RoomEvent ):void
+			{
+				var createEvent:Event = new Event( CREATE );
+				dispatchEvent( createEvent );
+			}
 			private function onChatUserRosterChange(event:CollectionEvent):void
 			{
 				//chatroom.friendList.removeAllChildren();
@@ -122,6 +145,16 @@
 				{					
 					trace("内容:"+message.body+"---源头:"+message.from.resource+"---时间:"+message.time )
 				}	 	 		
+			}
+			public function logOut():void
+			{
+				chatManager.disconnect();
+				this.setStyle("backgroundImage", "background.jpg");
+				managerface.visible=false;
+				managerface.initManagerFace();	
+				
+				login.visible=true;
+				login.login.enabled=true;
 			}
 			
 			private function onXIFFError( event:XIFFErrorEvent):void

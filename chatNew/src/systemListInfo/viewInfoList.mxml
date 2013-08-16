@@ -161,6 +161,8 @@
 				{					
 					case "1":
 					{
+						Application.application.roomSubject=new String("");
+						Application.application.roomSubject=viewApplyList.selectedItem.pName+"和"+viewApplyList.selectedItem.fName;
 						Application.application.createCrimicalRoom(viewApplyList.selectedItem.mID+"");	
 						requestType=2;
 						params.ispass=1;						
@@ -183,9 +185,8 @@
 			
 		]]>
 	</mx:Script>
-	<mx:VBox label="会见记录列表" width="100%">	
 		<mx:Label text="会见记录列表" color="#297A02" fontWeight="bold"/>
-		<mx:VBox height="100%" width="100%" borderStyle="inset">			
+		<mx:VBox height="70%" width="100%" borderStyle="inset">			
 			<mx:DataGrid id="viewApplyList" height="100%" width="100%" click="viewApplyList_clickHandler(event)">
 				<mx:columns>
 					<mx:DataGridColumn dataField="mID" headerText="编号"/>
@@ -260,5 +261,4 @@
 				</mx:FormItem>
 			</mx:HBox>
 		</mx:VBox>
-	</mx:VBox>	
 </mx:VBox>

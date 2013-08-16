@@ -1,53 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" fontSize="13" height="100%" xmlns:systemListInfo="systemListInfo.*" xmlns:com="com.*">
 	<mx:Style source="AeonGraphical.css" />
+	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
 		<![CDATA[
+			import com.adobe.serialization.json.JSON;
+			
 			import mx.collections.ArrayCollection;
 			import mx.collections.XMLListCollection;
 			import mx.core.Application;
 			import mx.core.UIComponent;
 			import mx.events.DividerEvent;
+			import mx.events.ItemClickEvent;
 			import mx.events.ListEvent;
+			import mx.events.MenuEvent;
+			import mx.managers.PopUpManager;
 			import mx.messaging.AbstractConsumer;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
 			
+			import systemListInfo.UpdataPasswordWindow;
 			import systemListInfo.backViewList;
 			import systemListInfo.criminalsInfoList;
 			import systemListInfo.familyInfoList;
 			import systemListInfo.monitorViewList;
 			import systemListInfo.systemManagerInfo;
 			import systemListInfo.viewInfoList;
-			public var currentNode:XML;
-			private var treeData:XMLList;
-			private var systemMan:ArrayCollection=new ArrayCollection([{id:1,name:"张",email:"",phone:"",type:0},{id:2,name:"王",email:"",phone:"",type:1},{id:3,name:"",email:"",phone:""
-			},{id:4,name:"",email:"",phone:"",type:0},{id:5,name:"",email:"",phone:"",type:0},{id:6,name:"",email:"",phone:"",type:1},{id:7,name:"",email:"",phone:"",type:2},{id:8,name:"",email:"",phone:""
-				,type:3},{id:9,name:"",email:"",phone:"",type:2},{id:10,name:"",email:"",phone:"",type:3},{id:11,name:"",email:"",phone:"",type:1},{id:12,name:"",email:"",phone:"",type:0}]);
+			public var currentNode:XML;		
 			private var listData:ArrayCollection=new ArrayCollection();
 			public var menuBarCollection:XMLListCollection;		
+			[Bindable]private var requestService:HTTPService=new HTTPService();
+			private var requestType:int
 			private function initApp():void
 			{
 				Application.application.setStyle("backgroundImage", null);
 			}
 			public function initManagerFace():void
 			{
-				switch(Application.application.loginInfo.R.email+"")
+				/* switch(Application.application.loginInfo.R.email+"")
 				{					
-					case "0":
-					{
-						myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"},{label:"用户管理"},{label:"犯人信息"},{label:"会见记录"}];
-					}
-						break;
-					case "1":
-					{
-						myList.dataProvider=[{label:"会见记录"}];
-					}
-						break;
-					case "2":
-					{
-						myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"}];
-					}
-						break; 
+				case "0":
+				{
+				myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"},{label:"用户管理"},{label:"犯人信息"},{label:"会见记录"}];
 				}
+				break;
+				case "1":
+				{
+				myList.dataProvider=[{label:"会见记录"}];
+				}
+				break;
+				case "2":
+				{
+				myList.dataProvider=[{label:"会见监控"},{label:"会见记录回看"}];
+				}
+				break; 
+				} */
 			}			
 			
 			protected function loadData(event:MouseEvent):void
@@ -111,38 +118,165 @@
 				<>
 					<menuitem label="注销" data="top">
 					</menuitem>
+					<menuitem label="修改密码" data="top">						
+					</menuitem>
 					<menuitem label="关闭" data="top">						
 					</menuitem>
 				</>;
+			
+			protected function system_changeHandler(event:ListEvent):void
+			{
+				if(event.currentTarget.selectedItem)
+				{
+					dataList.removeAllChildren();
+					switch(event.currentTarget.selectedItem.@label+"")
+					{
+						case "会见监控":
+						{
+							var viewmonitor:monitorViewList=new monitorViewList();
+							dataList.addChild(viewmonitor);
+							viewmonitor.getUserCount();
+						}
+							break;
+						case "会见记录回看":
+						{
+							var backview:backViewList=new backViewList();
+							backview.getUserCount();
+							dataList.addChild(backview);
+						}
+							break;
+						case "用户管理":
+						{
+							var systemlist:systemManagerInfo=new systemManagerInfo();
+							systemlist.getUserCount();
+							dataList.addChild(systemlist);
+						}
+							break;
+						case "关押人管理":
+						{
+							var criminal:criminalsInfoList=new criminalsInfoList();
+							criminal.getUserCount();
+							dataList.addChild(criminal);
+						}
+							break;
+						case "会见记录":
+						{
+							var view:viewInfoList=new viewInfoList();
+							view.getUserCount();
+							dataList.addChild(view);
+						}
+							break;						
+					}	
+				}
+			}
+			
+			protected function systemOption_clickHandler(event:MouseEvent):void
+			{
+				if(event.target.data)
+				{
+					switch(event.target.data.@label+"")
+					{
+						case "注销":
+						{
+							requestType=0;
+							requestService.url=config.dataServer+"/user/logout.do";
+							requestService.useProxy=false;
+							requestService.method="GET";
+							requestService.addEventListener("result",resultHandler);
+							var params:URLVariables = new URLVariables();
+							params.username =Application.application.loginInfo.R.username;
+							params.token = Application.application.loginInfo.R.token;
+							requestService.send(params);
+						}
+							break;
+						case "修改密码":
+						{
+							PopUpManager.createPopUp(this,UpdataPasswordWindow,false);
+						}
+							break;
+						case "关闭":
+						{
+							Application.application.removeAllChildren();
+							Application.application.logOut();
+							navigateToURL(new URLRequest('javascript:window.close()'),'_self');
+						}
+							break;			
+					}	
+				}
+			}
+			private function resultHandler(event:ResultEvent):void{
+				//Alert.show("res:"+event.result);
+				var res:Object= JSON.decode(event.result as String);	
+				if(res.S=="OK")
+				{					
+					switch(requestType)
+					{
+						case 0:
+						{
+							Application.application.logOut();
+							
+						}
+							break;
+						case 1:
+						{
+							
+						}
+							break;						
+					}
+					
+				}
+				else
+				{
+					var resR=res.R;
+					trace("errDesc:"+resR.errDesc,"提示");
+					trace("errCode:"+resR.errCode);
+				}				
+			}
 		]]>
 	</mx:Script>
+	<mx:XMLList id="treeData">
+		<node label="功能模块">
+			<node label="功能模块">
+				<node label="会见监控"/>
+				<node label="会见记录回看"/>
+			</node>
+			<node label="系统管理">
+				<node label="用户管理"/>
+				<node label="关押人管理"/>
+			</node>
+			<node label="会见记录"/>
+			<node label="会见审核"/>
+		</node>	
+	</mx:XMLList>
 	<mx:Resize id="expandIn" target="{childcontain}" widthTo="0"
 			   duration="500"/>
 	<mx:Resize id="expandOut" target="{childcontain}" widthTo="{this.width*.15}"
 			   duration="500"/>
 	<mx:VBox width="100%" height="100%" backgroundAlpha="1">
-		<mx:ControlBar height="39" width="100%">
-			<mx:Label text="远程视频会见系统" width="100%" fontSize="23" fontWeight="bold" color="#297A02" height="100%" textAlign="left"/>
-			<mx:Button label="关闭"/>
-			<mx:Button label="修改密码"/>
+		<mx:ControlBar height="55" width="100%">
+			<mx:Image source="assets/icons/log.png" height="48" width="48"/>
+			<mx:Label text="远程视频会见系统" width="100%" fontSize="25" fontWeight="bold" color="#297A02" height="100%" textAlign="left"/>
+			<mx:MenuBar dataProvider="{menubarXML}" id="systemOption" click="systemOption_clickHandler(event)"  height="70%" backgroundAlpha="1" cornerRadius="4" labelField="@label"/>
 		</mx:ControlBar>
 		<mx:HDividedBox width="100%" height="100%" dividerPress="hiddenLeft(event)" top="0" left="0" right="0" liveDragging="true">
 			<mx:VBox height="100%" width="15%" fontSize="13" id="childcontain">
-				<mx:List height="100%" width="100%" id="myList" click="loadData(event)">
-					<!--<mx:dataProvider>
-					<mx:Array>
-					<mx:Object label="用户管理"/>
-					<mx:Object label="犯人信息"/>
-					<mx:Object label="会见记录"/>
-					<mx:Object label="会见监控"/>
-					<mx:Object label="会见记录回看"/>
-					</mx:Array>
-					</mx:dataProvider>-->
-				</mx:List>
-				<!--<mx:Accordion width="100%" height="50%" fontSize="13">
-				<mx:Canvas label="系统管理" width="100%" height="100%">
-				<mx:Tree width="100%" height="100%" id="system" dataProvider="{}" change="loadData(event)" labelField="@label" showRoot="false"/>
+				<!--mx:List height="100%" width="100%" id="myList" click="loadData(event)">
+				<mx:dataProvider>
+				<mx:Array>
+				<mx:Object label="用户管理"/>
+				<mx:Object label="犯人信息"/>
+				<mx:Object label="会见记录"/>
+				<mx:Object label="会见监控"/>
+				<mx:Object label="会见记录回看"/>
+				</mx:Array>
+				</mx:dataProvider>
+				</mx:List>-->
+				<mx:Tree width="100%" height="100%" id="system" dataProvider="{treeData}" change="system_changeHandler(event)" labelField="@label" showRoot="false"/>
+				<!--<mx:Canvas label="系统管理" width="100%" height="100%">
+				
 				</mx:Canvas>
+				<mx:Accordion width="100%" height="100%" fontSize="13">
+				
 				<mx:Canvas label="探监申请" width="100%" height="100%">
 				</mx:Canvas>
 				<mx:Canvas label="会见监控" width="100%" height="100%">

@@ -11,9 +11,7 @@
 			import mx.controls.Alert;
 			import mx.core.Application;
 			import mx.rpc.events.ResultEvent;
-			import mx.rpc.http.HTTPService;
-			[Bindable]private var serverAddress:String="dellpc";
-			
+			import mx.rpc.http.HTTPService;	
 
 			private function initApp():void
 			{
@@ -63,7 +61,7 @@
 			
 			private function clearPage():void
 			{
-				usernameInput.text=usernameInput.text="";
+				usernameInput.text=passwordInput.text="";
 			}
 			private function connect():void
 			{

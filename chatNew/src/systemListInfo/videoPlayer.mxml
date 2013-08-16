@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml">
+	<mx:Script>
+		<![CDATA[
+			private var _video:flash.media.Video;
+			private var _webcam:flash.media.Video;	
+			
+			public function get video():Video {
+				return _video;
+			}
+			
+			public function set video(v:Video):void 
+			{		
+				if (_video != null) uic.removeChild(_video);
+				
+				_video = v;		
+				uic.addChild(_video);		
+			}
+		]]>
+	</mx:Script>
+	<mx:UIComponent x="0" y="0" id="uic" height="100%" width="100%"/>	
+</mx:Canvas>

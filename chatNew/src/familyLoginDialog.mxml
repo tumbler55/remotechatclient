@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="人员登陆" layout="absolute" width="292" height="206">
+<mx:TitleWindow xmlns:mx="http://www.adobe.com/2006/mxml" backgroundAlpha="0.1" title="人员登录" layout="absolute" width="292" height="206">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
@@ -58,7 +58,7 @@
 			
 			private function clearPage():void
 			{
-				usernameInput.text=usernameInput.text="";
+				usernameInput.text="";
 			}
 			private function connect():void
 			{
@@ -94,7 +94,7 @@
 		</mx:GridRow>  		
 		<mx:GridRow paddingTop="20" paddingLeft="50" width="100%">
 			<mx:GridItem width="163">
-				<mx:Button id="login" click="loginIn()" color="#000000" label="登陆" fontWeight="bold" fontSize="12"/>
+				<mx:Button id="login" click="loginIn()" color="#000000" label="登录" fontWeight="bold" fontSize="12"/>
 				<mx:Button id="clean" click="clearPage()" color="#000000" label="清除" fontWeight="bold" fontSize="12"/>
 			</mx:GridItem>
 		</mx:GridRow>

@@ -76,7 +76,7 @@
 					var applyservice:HTTPService=new HTTPService();
 					applyservice.url=config.dataServer+"/meeting/applyMeeting.do";
 					applyservice.useProxy=false;
-					applyservice.method="GET";
+					applyservice.method="POST";
 					applyservice.addEventListener("result",resultHandler);
 					applyservice.addEventListener(FaultEvent.FAULT,onFault);
 					var params:URLVariables = new URLVariables();

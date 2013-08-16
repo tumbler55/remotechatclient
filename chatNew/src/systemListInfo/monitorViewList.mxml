@@ -148,15 +148,15 @@
 							break;
 						case 1:
 						{
-							room1.roomName.text=roomCollection[0].pName;							
+							room1.roomName.text="上:"+roomCollection[0].pName+" 下:"+roomCollection[0].fName;							
 							room1.initRoom(roomCollection[0]);
 						}
 							break;
 						case 2:
 						{
-							room1.roomName.text=roomCollection[0].pName;							
+							room1.roomName.text="上:"+roomCollection[0].pName+" 下:"+roomCollection[0].fName;							
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].pName;							
+							room2.roomName.text="上:"+roomCollection[1].pName+" 下:"+roomCollection[1].fName;							
 							room2.initRoom(roomCollection[1]);
 						}
 							break;
@@ -165,11 +165,11 @@
 							room1.visible=true;
 							room2.visible=true;
 							room3.visible=true;
-							room1.roomName.text=roomCollection[0].pName;							
+							room1.roomName.text="上:"+roomCollection[0].pName+" 下:"+roomCollection[0].fName;							
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].pName;							
+							room2.roomName.text="上:"+roomCollection[1].pName+" 下:"+roomCollection[1].fName;					
 							room2.initRoom(roomCollection[1]);		
-							room3.roomName.text=roomCollection[2].pName;
+							room3.roomName.text="上:"+roomCollection[2].pName+" 下:"+roomCollection[2].fName;
 							room3.initRoom(roomCollection[2]);
 						}
 							break;
@@ -179,13 +179,13 @@
 							room2.visible=true;
 							room3.visible=true;
 							room4.visible=true;
-							room1.roomName.text=roomCollection[0].mID;
+							room1.roomName.text="上:"+roomCollection[0].pName+" 下:"+roomCollection[0].fName;
 							room1.initRoom(roomCollection[0]);
-							room2.roomName.text=roomCollection[1].mID;
+							room2.roomName.text="上:"+roomCollection[1].pName+" 下:"+roomCollection[1].fName;
 							room2.initRoom(roomCollection[1]);		
-							room3.roomName.text=roomCollection[2].mID;
+							room3.roomName.text="上:"+roomCollection[2].pName+" 下:"+roomCollection[2].fName;
 							room3.initRoom(roomCollection[2]);
-							room4.roomName.text=roomCollection[3].mID;
+							room4.roomName.text="上:"+roomCollection[3].pName+" 下:"+roomCollection[3].fName;
 							room4.initRoom(roomCollection[3]);
 						}
 							break;
@@ -205,7 +205,7 @@
 		]]>
 	</mx:Script>
 	<mx:VBox id="roomListFace" label="会见列表信息" height="100%" width="100%">
-		<mx:DataGrid id="viewApplyList" height="100%" width="100%">
+		<mx:DataGrid id="viewApplyList" height="70%" width="100%">
 			<mx:columns>
 				<mx:DataGridColumn dataField="mID" headerText="编号"/>
 				<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <actionScriptProperties analytics="false" mainApplicationPath="chatNew.mxml" projectUUID="ba03ed6a-88a3-424c-8bba-79e199f161ad" version="6">
-  <compiler additionalCompilerArguments="-locale en_US" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 3.5" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderLocation="H:/Apache Tomcat 6.0.20/webapps/chatNew-debug" outputFolderPath="bin-debug" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
+  <compiler additionalCompilerArguments="-locale en_US" autoRSLOrdering="false" copyDependentFiles="true" flexSDK="Flex 3.5" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="true" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderLocation="H:/chat-tomcat-7.0.42/webapps/chatNew-debug" outputFolderPath="bin-debug" rootURL="" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="0">
       <libraryPathEntry kind="4" path="">
@@ -9,7 +9,7 @@
         </excludedEntries>
       </libraryPathEntry>
       <libraryPathEntry kind="3" linkType="1" path="/xiff_3_1_0/bin/xiff_3_1_0.swc" useDefaultLinkType="false"/>
-      <libraryPathEntry kind="3" linkType="1" path="H:/Company/job new/software/as3corelib.swc" useDefaultLinkType="false"/>
+      <libraryPathEntry kind="3" linkType="1" path="libs/as3corelib.swc" useDefaultLinkType="false"/>
     </libraryPath>
     <sourceAttachmentPath>
       <sourceAttachmentPathEntry kind="3" linkType="1" path="${PROJECT_FRAMEWORKS}/libs/datavisualization.swc" sourcepath="${PROJECT_FRAMEWORKS}/projects/datavisualization/src" useDefaultLinkType="false"/>
@@ -17,13 +17,15 @@
   </compiler>
   <applications>
     <application path="Aeon.mxml"/>
+    <application path="VideoDemo/redFire.mxml"/>
     <application path="com/test/viemApplyPage.mxml"/>
     <application path="systemManager.mxml"/>
     <application path="chatClient.mxml"/>
+    <application path="XIFFGUI.mxml"/>
     <application path="com/test/video.mxml"/>
     <application path="com/test/XIFFGUI.mxml"/>
     <application path="viemApplyPage.mxml"/>
-    <application path="XIFFGUI.mxml"/>
+    <application path="videoplaer.mxml"/>
   </applications>
   <modules/>
   <buildCSSFiles/>

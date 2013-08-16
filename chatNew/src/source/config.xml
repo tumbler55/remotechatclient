@@ -1,6 +1,6 @@
 <config>
 <ip>dellpc</ip>
-<dataServer>http://dellpc:8371/VideoServer</dataServer> 
+<dataServer>http://dellpc:8080/VideoServer</dataServer> 
 <videoServer>rtmp://dellpc/oflaDemo</videoServer>
 <videoAddress>http://dellpc:7070/redfire/streams/</videoAddress>
 </config>

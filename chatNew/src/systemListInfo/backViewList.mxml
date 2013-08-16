@@ -164,7 +164,9 @@
 			}
 			public function backViewMeeting(obj:Object):void
 			{
-				trace(obj);
+				Application.application.loginInfo=new Object();
+				Application.application.loginInfo=obj;
+				trace(Application.application.dataconfig.videoAddress+'no'+Application.application.loginInfo.pID+'.flv');
 				var backview:backViewWindow=backViewWindow(PopUpManager.createPopUp(this,backViewWindow,true));
 				//backview.myVideo.source=config.videoAddress+"no.flv";
 				backview.initWindow(obj);
@@ -175,9 +177,8 @@
 			
 		]]>
 	</mx:Script>
-	<mx:VBox label="会见记录列表" width="100%">	
 		<mx:Label text="会见记录列表" color="#297A02" fontWeight="bold"/>
-		<mx:VBox height="313" width="100%" borderStyle="inset">			
+		<mx:VBox height="70%" width="100%" borderStyle="inset">			
 			<mx:DataGrid id="viewApplyList" height="100%" width="100%">
 				<mx:columns>
 					<mx:DataGridColumn dataField="mID" headerText="编号"/>
@@ -227,6 +228,5 @@
 				<mx:NumericStepper id="inputpage" stepSize="1" minimum="0" maximum="0" />  
 				<mx:LinkButton label="跳转" click="setPager(inputpage.value - 1);"  color="#36A400"/>  
 			</mx:HBox>
-		</mx:VBox>		
-	</mx:VBox>	
+		</mx:VBox>	
 </mx:VBox>

@@ -63,7 +63,9 @@ package com.yourpalmark.chat.data
 			_room.roomJID = new UnescapedJID( roomName + "@" + _chatManager.conferenceServer );
 			_room.roomName = roomName;
 			_room.connection = _chatManager.connection;		
-			_room.join( true );
+			//_room.join( true );
+			//昝不加入
+			_room.join(false);
 		}
 		
 		public function join( roomJID:UnescapedJID ):void

@@ -76,7 +76,7 @@
 					{
 						if(item.name==loginInfo.mID)
 						{
-							_room.join(new UnescapedJID(item.jid));
+							_room.join(new UnescapedJID(loginInfo.mID+"@"+_room.chatManager.conferenceServer));
 							_room.addEventListener(RoomEvent.ROOM_JOIN, onRoomJoin, false, 0, true );
 							chatroom.initRoom();							
 						}
@@ -85,10 +85,14 @@
 			}
 			private function onRoomJoin( event:RoomEvent ):void
 			{
+							
+			}
+			public function logIn():void
+			{
 				login.visible=false;
 				chatroom.visible=true;
 				chatroom.initApp();				
-				_room.removeEventListener(RoomEvent.ROOM_JOIN,onRoomJoin);				
+				_room.removeEventListener(RoomEvent.ROOM_JOIN,onRoomJoin);	
 			}
 			private function onLogin( event:LoginEvent):void
 			{

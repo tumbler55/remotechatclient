@@ -110,28 +110,61 @@
 						friendList.addChild(myDetail);
 					}					
 				}
-				messageTextArea.htmlText+=( "<font color='#ababab'>" + event.nickname + " 退出聊天室.</font>" );				
+				if(event.nickname==Application.application.loginInfo.pID)
+				{
+					messageTextArea.htmlText+=( "<font color='#ababab'>" + Application.application.loginInfo.pName + " 退出聊天室.</font>" );
+				}
+				else if(event.nickname==Application.application.loginInfo.fID)
+				{
+					messageTextArea.htmlText+=( "<font color='#ababab'>" + Application.application.loginInfo.fName + " 退出聊天室.</font>" );
+				}
+				else
+				{
+					this.onDisconnectClick();
+				}
+				
 			}
 			private function onUserJoin( event:RoomEvent ):void
 			{
 				friendList.removeAllChildren();
 				_room=Application.application._room;
 				trace(_room);
-				for each(var person:Object in Application.application._room.users.source)
+				if(_room.users.source)
+				{					
+					for each(var person:Object in _room.users.source)
+					{
+						if(person.displayName=="admin")
+						{
+							Application.application.logIn();
+						}						
+					}
+				}
+				/* for each(var person:Object in Application.application._room.users.source)
 				{
-					var myDetail:personInfo=new personInfo();
-					myDetail._name=person.displayName;
-					if(Application.application.chatManager.currentUser.displayName==person.displayName)
+				var myDetail:personInfo=new personInfo();
+				myDetail._name=person.displayName;
+				if(Application.application.chatManager.currentUser.displayName==person.displayName)
+				{
+				friendList.addChildAt(myDetail,0);
+				}	
+				else
+				{
+				myDetail._pic="visitor.png"
+				friendList.addChild(myDetail);
+				}					
+				} */
+				if(event.nickname!=Application.application.chatManager.currentUser.displayName)
+				{
+					if(event.nickname==Application.application.loginInfo.pID)
 					{
-						friendList.addChildAt(myDetail,0);
+						messageTextArea.htmlText+=( "<font color='#ababab'>" + Application.application.loginInfo.pName + " 进入聊天室.</font>" );
+					}
+					else if(event.nickname==Application.application.loginInfo.fID)
+					{
+						messageTextArea.htmlText+=( "<font color='#ababab'>" + Application.application.loginInfo.fName + " 进入聊天室.</font>" );
 					}	
-					else
-					{
-						myDetail._pic="visitor.png"
-						friendList.addChild(myDetail);
-					}					
-				}				
-				messageTextArea.htmlText+=( "<font color='#ababab'>" + event.nickname + " 进入聊天室.</font>" );
+				}
+				
 			}
 			private function onUserKicked( event:RoomEvent ):void
 			{
@@ -197,13 +230,26 @@
 				if(!time ) time = new Date();		
 				if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
 				{
-					messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					if(jid=="admin")
+					{
+						messageTextArea.htmlText += "[管理员" + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					}
+					else
+					{
+						messageTextArea.htmlText += "[" + (jid==Application.application.loginInfo.pID?Application.application.loginInfo.pNAME:Application.application.loginInfo.fNAME) + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					}				
 				}
 				else if(Application.application.chatManager.currentUser.displayName==jid)
 				{
-					messageTextArea.htmlText += "<font color='#0000ff'>[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
-				}
-				
+					if(Application.application.loginInfo.pID==jid)
+					{
+						messageTextArea.htmlText += "<font color='#0000ff'>[" + Application.application.loginInfo.pName + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+					}
+					else
+					{
+						messageTextArea.htmlText += "<font color='#0000ff'>[" + Application.application.loginInfo.fName + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+					}				
+				}				
 				callLater( updateScrollPosition );
 			}
 			private function updateScrollPosition():void
@@ -255,7 +301,7 @@
 				</mx:Canvas>
 				<mx:Canvas label="我的信息" creationComplete="loadpMyInfo(Application.application.loginInfo)">
 					<mx:VBox>
-						<mx:FormItem label="姓名:" >
+						<mx:FormItem label="   姓名:" >
 							<mx:Label id="pName"/>							
 						</mx:FormItem>
 						<mx:FormItem label="身份证:">
@@ -270,7 +316,7 @@
 				</mx:Canvas>
 				<mx:Canvas label="对方信息" creationComplete="loadpfUserInfo(Application.application.loginInfo)">					
 					<mx:VBox>
-						<mx:FormItem label="姓名:">
+						<mx:FormItem label="   姓名:">
 							<mx:Label id="fName"/>							
 						</mx:FormItem>
 						<mx:FormItem label="身份证:">

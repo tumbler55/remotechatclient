@@ -19,7 +19,7 @@
 		<link>
 			<name>bin-debug</name>
 			<type>2</type>
-			<location>H:/Apache Tomcat 6.0.20/webapps/chatNew-debug</location>
+			<location>H:/chat-tomcat-7.0.42/webapps/chatNew-debug</location>
 		</link>
 	</linkedResources>
 </projectDescription>

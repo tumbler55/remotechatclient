@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset">
-	<mx:Style source="AeonGraphical.css" />
-	<mx:Label id="roomName" color="#FF0000" fontSize="12"/>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" borderStyle="inset" xmlns:systemListInfo="systemListInfo.*">
+	<mx:Style source="AeonGraphical.css" />	
 	<mx:Script>
 		<![CDATA[
 			import com.yourpalmark.chat.ChatManager;
@@ -24,12 +23,14 @@
 			private var _chatManager:ChatManager;
 			[Bindable]public var messageInfo:Sound=new Sound(new URLRequest("msg.mp3"));
 			private var getVideo:VideoMonitor;
+			private var roomInfo:Object;
 			private function initApp():void
 			{
 				
 			}			
 			public function initRoom(myobject:Object):void
 			{
+				roomInfo=myobject;
 				_room.chatManager=Application.application.chatManager;	
 				_room.join(new UnescapedJID(myobject.mID+"@"+_room.chatManager.conferenceServer));
 				getVideo=new VideoMonitor(crimiralVideo,familyVideo,serverVideo);
@@ -86,19 +87,34 @@
 			}
 			private function onUserJoin( event:RoomEvent ):void
 			{
-				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "进入聊天室.</font>");
+				if(event.nickname==roomInfo.pID)
+				{
+					messageTextArea.htmlText+=("<font color='#ababab'>" + roomInfo.pName + "进入聊天室.</font>");
+				}
+				else if(event.nickname==roomInfo.fID)
+				{
+					messageTextArea.htmlText+=("<font color='#ababab'>" + roomInfo.fName + "进入聊天室.</font>");
+				}	
+				
 			}
 			private function onUserDeparture( event:RoomEvent):void
 			{
-				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "退出聊天室.</font>" );				
+				if(event.nickname==roomInfo.pID)
+				{
+					messageTextArea.htmlText+=("<font color='#ababab'>" + roomInfo.pName + "退出聊天室.</font>");
+				}
+				else if(event.nickname==roomInfo.fID)
+				{
+					messageTextArea.htmlText+=("<font color='#ababab'>" + roomInfo.fName + "退出聊天室.</font>");
+				}			
 			}
 			private function onUserKicked( event:RoomEvent ):void
 			{
-				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "踢出聊天室.</font>" );	
+				//				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "踢出聊天室.</font>" );	
 			}
 			private function onUserBanned( event:RoomEvent ):void
 			{
-				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "账号冻结.</font>" );	
+				//				messageTextArea.htmlText+=("<font color='#ababab'>" + event.nickname + "账号冻结.</font>" );	
 			}
 			private function onMessage( event:RoomEvent):void
 			{
@@ -112,11 +128,18 @@
 				if((Application.application.chatManager.currentUser.displayName!=jid)&&(jid!=null))
 				{
 					messageInfo.play();
-					messageTextArea.htmlText += "[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					if(jid==roomInfo.pID)
+					{
+						messageTextArea.htmlText += "[" + roomInfo.pName + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					}
+					else
+					{
+						messageTextArea.htmlText += "[" + roomInfo.fName + " " +DateTimeParser.time2string(time)+ "]   " + message;
+					}					
 				}
 				else if(Application.application.chatManager.currentUser.displayName==jid)
 				{
-					messageTextArea.htmlText += "<font color='#0000ff'>[" + jid + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+					messageTextArea.htmlText += "<font color='#0000ff'>[管理员" + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
 				}				
 				callLater( updateMessageScrollPosition );
 			}
@@ -154,7 +177,7 @@
 					if(_room.chatManager.currentUser.displayName!=person.displayName)
 					{
 						_room.room.kickOccupant(person.displayName, "你被移除" );
-						var jid:UnescapedJID=new UnescapedJID(person.displayName+"@dellpc");
+						var jid:UnescapedJID=new UnescapedJID(person.displayName+"@127.0.0.1");
 						_room.room.ban( [jid] );
 					}					
 				}				
@@ -183,18 +206,15 @@
 	</mx:Script>
 	<mx:HBox width="100%" height="100%" id="panel">
 		<mx:VBox width="25%" height="100%">
-			
-			<mx:Label text="犯人"/>
-			<mx:VideoDisplay width="100%" height="49%" id="crimiralVideo"/>	
-			<mx:Label text="家属"/>
-			<mx:VideoDisplay width="100%" height="49%" id="familyVideo"/>
+			<systemListInfo:videoPlayer height="50%"  width="100%" id="crimiralVideo"/>
+			<systemListInfo:videoPlayer height="50%" width="100%" id="familyVideo"/>
 		</mx:VBox>
 		<mx:VBox height="100%" width="75%">
-					<mx:TextArea id="messageTextArea" width="100%" height="85%" visible="true" borderStyle="inset" editable="false" />
-
+			<mx:TextArea id="messageTextArea" width="100%" height="85%" visible="true" borderStyle="inset" editable="false" />			
 			<mx:HBox width="100%" height="5%">
-				<mx:Label text="会话结束倒计时:"/>
-				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11"/>
+				<mx:Label id="roomName" color="#297A02" fontSize="12"/>
+				<mx:Label text="会话结束倒计时:" visible="false"/>
+				<mx:Label id="timechange" text="“”" color="#FF0202" fontSize="11" visible="false"/>
 				<mx:Button label="掐断会话" click="cuteMeeting(event)" id="viewOver"/>
 				<!--<mx:Button label="放大" click="zoomOut(event)"/>-->
 				<mx:Image id="voicecontrol" buttonMode="true" toolTip="喊话开启" click="voiceControl(event)" source="assets/icons/volume-open.png" height="24" width="24"/>

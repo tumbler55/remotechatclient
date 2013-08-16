@@ -12,8 +12,12 @@ package com.yourpalmark.chat.data
 	import flash.net.Responder;
 	
 	import mx.controls.Alert;
+	import mx.controls.Label;
 	import mx.controls.VideoDisplay;
 	import mx.core.Application;
+	import mx.core.UIComponent;
+	
+	import systemListInfo.videoPlayer;
 	
 	public class VideoMonitor extends Sprite
 	{
@@ -27,8 +31,8 @@ package com.yourpalmark.chat.data
 		private var mic:Microphone;
 		private var responder:Responder;
 		private var r:Responder;
-		private var vidOut:VideoDisplay;
-		private var vidIn:VideoDisplay;
+		private var vidOut:videoPlayer;
+		private var vidIn:videoPlayer;
 		private var vOut:Video;
 		private var vIn:Video;
 		
@@ -39,10 +43,11 @@ package com.yourpalmark.chat.data
 		public var inStream:String=new String();
 		public var serverStream:String=new String();
 		
-		public function VideoMonitor(vidOut:VideoDisplay,vidIn:VideoDisplay,serverVideoDisplay:VideoDisplay)
+		public function VideoMonitor(vidOut:videoPlayer,vidIn:videoPlayer,serverVideoDisplay:VideoDisplay)
 		{
 			this.vidIn=vidIn;
 			this.vidOut=vidOut;	
+			this.vidOut.label=Application.application.loginInfo.fName+"";
 			this.serverVideoDisplay=serverVideoDisplay;			
 			var rtmpNow:String=Application.application.config.videoServer;
 			netconn=new NetConnection;
@@ -108,14 +113,25 @@ package com.yourpalmark.chat.data
 			netServer.publish(serverStream, "live");	
 			
 			//Play streamed video
-			netOut=new NetStream(netconn);
+			/*netOut=new NetStream(netconn);
 			netOut.client=customClient;
 			vOut=new Video();
 			vOut.width=vidOut.width;
 			vOut.height=vidOut.height;			
 			vOut.attachNetStream(netOut);
-			vidOut.addChild(vOut);
-			netOut.play(inStream);			
+			vidOut.video=vOut;
+			vidOut.caption.text="测试一下呢"*/
+			//vidOut.uic.addChild(vOut);
+			netOut=new NetStream(netconn);
+			netOut.client=customClient;
+			vidOut.video=new Video();
+			vidOut.video.width=vidOut.width;
+			vidOut.video.height=vidOut.height;
+			vidOut.video.attachNetStream(netOut);
+			
+			
+			netOut.play(inStream);	
+			
 			//Play streamed video
 			netIn=new NetStream(netconn);
 			netIn.client=customClient;
@@ -123,7 +139,9 @@ package com.yourpalmark.chat.data
 			vIn.width=vidIn.width;
 			vIn.height=vidIn.height;			
 			vIn.attachNetStream(netIn);
-			vidIn.addChild(vIn);
+			vidIn.video=vIn;
+			//vidIn.uic.addChild(vIn);
+			
 			netIn.play(outStream);
 			
 			//Save voice
@@ -167,7 +185,7 @@ package com.yourpalmark.chat.data
 		
 		private function setVid():void
 		{
-			vidOut=new VideoDisplay();
+			/*vidOut=new VideoDisplay();
 			addChild(vidOut);
 			vidOut.x=25;
 			vidOut.y=110;
@@ -181,7 +199,7 @@ package com.yourpalmark.chat.data
 			
 			vidIn.width=300;
 			vidIn.height=300;
-			
+			*/
 		}		
 		public function metaDataHandler(infoObject:Object):void 
 		{ 
