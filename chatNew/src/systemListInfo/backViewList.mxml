@@ -11,6 +11,7 @@
 			import mx.controls.dataGridClasses.DataGridItemRenderer;
 			import mx.core.Application;
 			import mx.events.CloseEvent;
+			import mx.formatters.DateFormatter;
 			import mx.managers.PopUpManager;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
@@ -174,7 +175,14 @@
 				
 				
 			}
-			
+			public function changeMilliSecondToDate(milliseconds:Number):String
+			{
+				var date:Date=new Date(milliseconds);
+				var dateFormatter:DateFormatter=new DateFormatter();
+				dateFormatter.formatString="YYYY-MM-DD JJ:NN:SS";
+				var time:String=dateFormatter.format(date);
+				return time;
+			}
 		]]>
 	</mx:Script>
 		<mx:Label text="会见记录列表" color="#297A02" fontWeight="bold"/>
@@ -182,22 +190,21 @@
 			<mx:DataGrid id="viewApplyList" height="100%" width="100%">
 				<mx:columns>
 					<mx:DataGridColumn dataField="mID" headerText="编号"/>
-					<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
-					<mx:DataGridColumn dataField="pID" headerText="犯人身份证"/>
-					<mx:DataGridColumn dataField="fName" headerText="家属姓名"/>
-					<mx:DataGridColumn dataField="fID" headerText="家属身份证"/>
+					<mx:DataGridColumn dataField="pName" headerText="关押人人姓名"/>
+					<mx:DataGridColumn dataField="pID" headerText="关押人身份证"/>
+					<mx:DataGridColumn dataField="fName" headerText="申请人姓名"/>
+					<mx:DataGridColumn dataField="fID" headerText="申请人身份证"/>
 					<mx:DataGridColumn dataField="relation" headerText="关系"/>
 					<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
-					<mx:DataGridColumn dataField="startTime" headerText="开始时间">
+					<mx:DataGridColumn dataField="startTime" headerText="开始时间" width="150">
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreclose?'是':'否'}"/>						
+									<mx:Label text="{outerDocument.changeMilliSecondToDate(data.startTime)}"/>						
 								</mx:HBox>  
 							</mx:Component>  
-						</mx:itemRenderer> 
-					</mx:DataGridColumn>
-					<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
+						</mx:itemRenderer>  
+					</mx:DataGridColumn>	
 					<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
 						<mx:itemRenderer>  
 							<mx:Component>  
@@ -206,8 +213,9 @@
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer> 
-					</mx:DataGridColumn>					
-					<mx:DataGridColumn dataField="status" headerText="状态"/>
+					</mx:DataGridColumn>	
+					<mx:DataGridColumn headerText="审批时间"/>	
+					<mx:DataGridColumn headerText="审批处理原因"/>
 					<mx:DataGridColumn headerText="操作" dataField="status" width="70">  
 						<mx:itemRenderer>  
 							<mx:Component>  

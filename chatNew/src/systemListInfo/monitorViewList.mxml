@@ -9,6 +9,7 @@
 			import mx.collections.ArrayCollection;
 			import mx.controls.Alert;
 			import mx.core.Application;
+			import mx.formatters.DateFormatter;
 			
 			import org.igniterealtime.xiff.conference.Room;
 			import org.igniterealtime.xiff.core.Browser;
@@ -39,8 +40,8 @@
 				requestService.method="GET";
 				requestService.addEventListener("result",resultHandler);
 				var params:URLVariables = new URLVariables();
-				params.myusername = httpEncoding(loginData.R.username);
-				params.token = httpEncoding(loginData.R.token);
+				params.myusername =Application.application.systemUser.R.username;
+				params.token = Application.application.systemUser.R.token;
 				requestService.send(params); 
 			}
 			//对提交给后台的参数进行UTF-8的编码处理
@@ -113,8 +114,8 @@
 				var params:URLVariables = new URLVariables();
 				params.pageNo = 1;
 				params.pageSize =12;
-				params.myusername = httpEncoding(loginData.R.username);
-				params.token = httpEncoding(loginData.R.token);
+				params.myusername = httpEncoding(Application.application.systemUser.R.username);
+				params.token = httpEncoding(Application.application.systemUser.R.token);
 				requestService.send(params);			
 			} 	
 			
@@ -138,7 +139,6 @@
 			private function initAllRoom():void
 			{	
 				roomCollection=viewApplyList.dataProvider as ArrayCollection;
-				trace("房间数"+roomCollection.length)
 				if(roomCollection)
 				{
 					switch(roomCollection.length+0)
@@ -202,22 +202,35 @@
 			{
 				Alert.show("删除");
 			}
+			public function changeMilliSecondToDate(milliseconds:Number):String
+			{
+				var date:Date=new Date(milliseconds);
+				var dateFormatter:DateFormatter=new DateFormatter();
+				dateFormatter.formatString="YYYY-MM-DD JJ:NN:SS";
+				var time:String=dateFormatter.format(date);
+				return time;
+			}
 		]]>
 	</mx:Script>
 	<mx:VBox id="roomListFace" label="会见列表信息" height="100%" width="100%">
 		<mx:DataGrid id="viewApplyList" height="70%" width="100%">
 			<mx:columns>
 				<mx:DataGridColumn dataField="mID" headerText="编号"/>
-				<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
-				<mx:DataGridColumn dataField="pID" headerText="犯人身份证"/>
-				<mx:DataGridColumn dataField="fName" headerText="家属姓名"/>
-				<mx:DataGridColumn dataField="fID" headerText="家属身份证"/>
+				<mx:DataGridColumn dataField="pName" headerText="关押人姓名"/>
+				<mx:DataGridColumn dataField="pID" headerText="关押人身份证"/>
+				<mx:DataGridColumn dataField="fName" headerText="申请人姓名"/>
+				<mx:DataGridColumn dataField="fID" headerText="申请人身份证"/>
 				<mx:DataGridColumn dataField="relation" headerText="关系"/>
 				<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
-				<mx:DataGridColumn dataField="startTime" headerText="开始时间">
-					
-				</mx:DataGridColumn>
-				<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
+				<mx:DataGridColumn dataField="startTime" headerText="开始时间" width="150">
+					<mx:itemRenderer>  
+						<mx:Component>  
+							<mx:HBox horizontalCenter="0" verticalCenter="0">  
+								<mx:Label text="{outerDocument.changeMilliSecondToDate(data.startTime)}"/>						
+							</mx:HBox>  
+						</mx:Component>  
+					</mx:itemRenderer> 
+				</mx:DataGridColumn>				
 					<!--<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
 					<mx:itemRenderer>  
 						<mx:Component>  

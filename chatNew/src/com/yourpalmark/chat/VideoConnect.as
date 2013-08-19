@@ -196,9 +196,8 @@ package com.yourpalmark.chat
 			}		
 			mic.setUseEchoSuppression(true);
 			mic.setLoopBack(true);
-			mic.setSilenceLevel(10, 20000);
+			mic.setSilenceLevel(12, 20000);
 			mic.gain = 60;
-
 		}
 		
 		private function setVid():void

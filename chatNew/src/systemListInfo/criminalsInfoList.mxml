@@ -207,14 +207,20 @@
 		]]>
 	</mx:Script>
 		<mx:HBox height="24">
-			<mx:Label text="犯人信息列表" color="#297A02" fontWeight="bold" height="100%" textAlign="left" fontSize="13"/>
+			<mx:Label text="关押人信息列表" color="#297A02" fontWeight="bold" height="100%" textAlign="left" fontSize="13"/>
 			<mx:LinkButton label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
 		</mx:HBox>		
 		<mx:VBox width="100%" borderStyle="inset" height="70%">
 			<mx:DataGrid id="crimnalList" height="100%" width="100%">
 				<mx:columns>
 					<mx:DataGridColumn dataField="name" headerText="姓名"/>	
-					<mx:DataGridColumn dataField="username" headerText="身份证"/>							
+					<mx:DataGridColumn dataField="username" headerText="身份证"/>
+					<mx:DataGridColumn headerText="性别"/>
+					<mx:DataGridColumn headerText="出身日期"/>
+					<mx:DataGridColumn headerText="内部编号"/>
+					<mx:DataGridColumn headerText="关押时间"/>
+					<mx:DataGridColumn headerText="状态"/>
+					<mx:DataGridColumn headerText="犯罪类型"/>					
 					<mx:DataGridColumn headerText="操作">  
 						<mx:itemRenderer>  
 							<mx:Component>  

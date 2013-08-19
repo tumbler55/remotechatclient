@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%">
+<mx:Canvas xmlns:mx="http://www.adobe.com/2006/mxml" width="100%" height="100%" backgroundAlpha="1">
 	<mx:Style source="AeonGraphical.css" />
 	<mx:Model id="config" source="source/config.xml" />
 	<mx:Script>
@@ -15,6 +15,7 @@
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
 			private var loginData:Object=Application.application.loginInfo;
+			private var dataItem:Object;
 			[Bindable]private var  requestType:int=0;
 			[Bindable]private var requestService:HTTPService=new HTTPService();
 			private var countTotal:int=0;
@@ -81,6 +82,7 @@
 							break;
 						case 3:
 						{	
+							this.getUserCount();
 							Alert.show("删除成功！","提示");
 						}
 							break;
@@ -207,8 +209,9 @@
 				}
 			}	
 			
-			public function deleteData(event:MouseEvent):void
+			public function deleteData(obj:Object):void
 			{
+				dataItem=obj;
 				Alert.show("确定删除？","删除人员",12,null,configDel);
 			}
 			private function configDel(event:CloseEvent):void
@@ -221,25 +224,26 @@
 					requestService.method="GET";
 					requestService.addEventListener("result",resultHandler);
 					var params:URLVariables = new URLVariables();
-					params.username =data.username;
+					params.username =dataItem.username;
 					params.myusername =loginData.R.username;
 					params.token = loginData.R.token;
 					requestService.send(params); 
 				}				
-			}
-			
-			
+			}			
 		]]>
 	</mx:Script>
-		<mx:Label text="系统人员信息列表" color="#297A02" fontWeight="bold"/>		
+	<mx:VBox height="100%" width="100%">
+		<mx:HBox>
+			<mx:Label text="用户信息列表" color="#297A02" fontWeight="bold"/>
+		<mx:LinkButton label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
+		</mx:HBox>		
 		<mx:VBox width="100%" height="70%">			
-			<mx:MenuBar top="0" right="0" left="0" dataProvider="{ menuBarCollection }" labelField="@label" width="100%"/>
-			
 			<mx:DataGrid id="system_man" height="100%" top="0" width="100%">
 				<mx:columns>
-					<mx:DataGridColumn dataField="username" headerText="账号"/>
+					<mx:DataGridColumn dataField="username" headerText="登录名"/>
 					<mx:DataGridColumn dataField="name" headerText="名称"/>
-					<mx:DataGridColumn dataField="email" headerText="类型" width="100">
+					<mx:DataGridColumn dataField="" headerText="警员编号"/>
+					<mx:DataGridColumn dataField="email" headerText="权限" width="100">
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
@@ -252,7 +256,8 @@
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:LinkButton label="删除" click="outerDocument.deleteData(event)" textDecoration="underline" color="#36A400"/>									
+									<mx:LinkButton label="修改" click="" textDecoration="underline" color="#36A400"/>
+									<mx:LinkButton label="删除" click="outerDocument.deleteData(data)" textDecoration="underline" color="#36A400"/>										
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  
@@ -270,7 +275,7 @@
 			</mx:HBox>
 		</mx:VBox>		
 		<mx:HBox height="30%" width="100%">
-			<mx:FormItem label="账号:">
+			<mx:FormItem label="登录名:">
 				<mx:TextInput id="user_account" />
 			</mx:FormItem>
 			<mx:FormItem label="用户名:">
@@ -285,6 +290,6 @@
 			<mx:FormItem label="确认密码">
 				<mx:TextInput id="config_password" displayAsPassword="true"/>
 			</mx:FormItem>
-			<mx:Button label="新增" icon="@Embed('assets/icons/add.gif')" click="addData(event)"/>
 		</mx:HBox>
-</mx:VBox>
+	</mx:VBox>		
+</mx:Canvas>

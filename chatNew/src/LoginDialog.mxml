@@ -47,6 +47,7 @@
 				//Alert.show("res:"+event.result);
 				var res:Object= JSON.decode(event.result as String);		
 				Application.application.loginInfo=res;
+				Application.application.systemUser=res;
 				if(res.S=="OK"){
 					this.connect();
 					var resR=res.R;

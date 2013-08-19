@@ -236,7 +236,14 @@
 					}
 					else
 					{
-						messageTextArea.htmlText += "[" + (jid==Application.application.loginInfo.pID?Application.application.loginInfo.pNAME:Application.application.loginInfo.fNAME) + " " +DateTimeParser.time2string(time)+ "]   " + message;
+						if(Application.application.loginInfo.pID==jid)
+						{
+							messageTextArea.htmlText += "[" + Application.application.loginInfo.pName + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+						}
+						else
+						{
+							messageTextArea.htmlText += "[" + Application.application.loginInfo.fName + " " +DateTimeParser.time2string(time)+ "]   " + message+"</font>";
+						}	
 					}				
 				}
 				else if(Application.application.chatManager.currentUser.displayName==jid)

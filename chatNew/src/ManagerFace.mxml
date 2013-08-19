@@ -245,7 +245,6 @@
 				<node label="关押人管理"/>
 			</node>
 			<node label="会见记录"/>
-			<node label="会见审核"/>
 		</node>	
 	</mx:XMLList>
 	<mx:Resize id="expandIn" target="{childcontain}" widthTo="0"

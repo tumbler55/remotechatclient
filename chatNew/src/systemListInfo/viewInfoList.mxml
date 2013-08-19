@@ -11,6 +11,7 @@
 			import mx.controls.dataGridClasses.DataGridItemRenderer;
 			import mx.core.Application;
 			import mx.events.CloseEvent;
+			import mx.formatters.DateFormatter;
 			import mx.rpc.events.ResultEvent;
 			import mx.rpc.http.HTTPService;
 			
@@ -137,8 +138,6 @@
 					fName.text=event.target.data.fName;
 					fID.text=event.target.data.fID;
 					relation.text=event.target.data.relation;
-					duration.text=event.target.data.duration;
-					startTime.text=event.target.data.startTime;
 				}				
 			}
 			public function confirmApply(event:MouseEvent):void
@@ -182,6 +181,14 @@
 				}
 				requestService.send(params);
 			}
+			public function changeMilliSecondToDate(milliseconds:Number):String
+			{
+				var date:Date=new Date(milliseconds);
+				var dateFormatter:DateFormatter=new DateFormatter();
+				dateFormatter.formatString="YYYY-MM-DD JJ:NN:SS";
+				var time:String=dateFormatter.format(date);
+				return time;
+			}
 			
 		]]>
 	</mx:Script>
@@ -190,31 +197,36 @@
 			<mx:DataGrid id="viewApplyList" height="100%" width="100%" click="viewApplyList_clickHandler(event)">
 				<mx:columns>
 					<mx:DataGridColumn dataField="mID" headerText="编号"/>
-					<mx:DataGridColumn dataField="pName" headerText="犯人姓名"/>
-					<mx:DataGridColumn dataField="pID" headerText="犯人身份证"/>
-					<mx:DataGridColumn dataField="fName" headerText="家属姓名"/>
-					<mx:DataGridColumn dataField="fID" headerText="家属身份证"/>
+					<mx:DataGridColumn dataField="pName" headerText="关押人姓名"/>
+					<mx:DataGridColumn dataField="pID" headerText="关押人身份证"/>
+					<mx:DataGridColumn dataField="fName" headerText="申请人姓名"/>
+					<mx:DataGridColumn dataField="fID" headerText="申请人身份证"/>
 					<mx:DataGridColumn dataField="relation" headerText="关系"/>
-					<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>					
-					<mx:DataGridColumn dataField="startTime" headerText="开始时间">
-						
-					</mx:DataGridColumn>
-					<mx:DataGridColumn dataField="createDate" headerText="创建时间"/>					
-					<!--<mx:DataGridColumn dataField="foreclose" headerText="强制关闭">
+					<mx:DataGridColumn dataField="duration" headerText="会见时长(分钟)"/>	
+						<mx:DataGridColumn dataField="startTime" headerText="开始时间" width="200">
+							<mx:itemRenderer>  
+								<mx:Component>  
+									<mx:HBox horizontalCenter="0" verticalCenter="0">  
+										<mx:Label text="{outerDocument.changeMilliSecondToDate(data.startTime)}"/>						
+									</mx:HBox>  
+								</mx:Component>  
+							</mx:itemRenderer> 
+					</mx:DataGridColumn>						
+					<mx:DataGridColumn dataField="status" headerText="状态">
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:Label text="{data.foreclose?'是':'否'}"/>						
+									<mx:Label text="{['待审核','审核通过','未通过','完成'][data.status]}"/>						
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer> 
-					</mx:DataGridColumn>	-->				
-					<mx:DataGridColumn dataField="status" headerText="状态"/>
+					</mx:DataGridColumn>					
+					<mx:DataGridColumn dataField="" headerText="监视人"/>	
 					<mx:DataGridColumn headerText="操作" dataField="status" width="70">  
 						<mx:itemRenderer>  
 							<mx:Component>  
 								<mx:HBox horizontalCenter="0" verticalCenter="0">  
-									<mx:LinkButton label="审核" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
+									<mx:LinkButton label="审批" color="#36A400" textDecoration="underline" buttonMode="true" icon="@Embed('assets/icons/check.png')" visible="{data.status=='0'}" click="outerDocument.confirmApply(event)"/>
 								</mx:HBox>  
 							</mx:Component>  
 						</mx:itemRenderer>  
@@ -233,32 +245,23 @@
 		</mx:VBox>
 		<mx:VBox height="30%" width="100%">
 			<mx:HBox width="100%">
-				<mx:FormItem label="犯人姓名:">
+				<mx:FormItem label="关押人姓名:">
 					<mx:Label id="pName" text=""/>
 				</mx:FormItem>
-				<mx:FormItem label="犯人身份证:">
+				<mx:FormItem label="关押人身份证:">
 					<mx:Label id="pID" text=""/>
 				</mx:FormItem>
-				<mx:FormItem label="家属姓名:">
+				<mx:FormItem label="申请人姓名:">
 					<mx:Label id="fName" text=""/>
 				</mx:FormItem>
-				<mx:FormItem label="家属身份证:">
+				<mx:FormItem label="申请人身份证:">
 					<mx:Label id="fID" text=""/>
 				</mx:FormItem>
 			</mx:HBox>	
 			<mx:HBox width="100%">
 				<mx:FormItem label="相互关系:">
 					<mx:Label id="relation" text=""/>
-				</mx:FormItem>
-				<mx:FormItem label="  会见时长:">
-					<mx:Label id="duration" text=""/>
-				</mx:FormItem>
-				<mx:FormItem label="开始时间:">
-					<mx:Label id="startTime" text=""/>
-				</mx:FormItem>
-				<mx:FormItem label="  申请时间:">
-					<mx:Label text=""/>
-				</mx:FormItem>
+				</mx:FormItem>				
 			</mx:HBox>
 		</mx:VBox>
 </mx:VBox>

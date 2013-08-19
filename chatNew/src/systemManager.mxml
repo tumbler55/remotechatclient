@@ -33,6 +33,7 @@
 			public var _room:ChatRoom;
 			public var browser:Browser;
 			[Bindable]public var loginInfo:Object;
+			[Bindable]public var systemUser:Object;
 			public var dataconfig:Object;
 			public static var CREATE:String = "create";
 			public var roomSubject:String;
@@ -151,12 +152,10 @@
 				chatManager.disconnect();
 				this.setStyle("backgroundImage", "background.jpg");
 				managerface.visible=false;
-				managerface.initManagerFace();	
-				
+				managerface.initManagerFace();				
 				login.visible=true;
 				login.login.enabled=true;
-			}
-			
+			}			
 			private function onXIFFError( event:XIFFErrorEvent):void
 			{
 				trace(event.toString());
